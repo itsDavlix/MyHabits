@@ -66,9 +66,6 @@ class RegistrationViewModel : ViewModel() {
         if (state.password.isBlank()) {
             _uiState.update { it.copy(passwordError = "La contraseña es obligatoria") }
             hasError = true
-        } else if (state.password.length < 6) {
-            _uiState.update { it.copy(passwordError = "Mínimo 6 caracteres") }
-            hasError = true
         }
 
         if (!hasError) {

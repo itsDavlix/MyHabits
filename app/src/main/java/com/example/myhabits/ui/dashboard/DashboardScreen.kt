@@ -36,6 +36,7 @@ val HealthBlue = Color(0xFF00D2FF)
 @Composable
 fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
     val habits by viewModel.habits.collectAsState()
+    val userName by viewModel.userName.collectAsState()
     val completedCount = habits.count { it.isCompleted }
     val totalCount = habits.size
     val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
@@ -50,7 +51,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
                 .fillMaxSize()
                 .padding(20.dp)
         ) {
-            HeaderSection()
+            HeaderSection(userName)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -97,7 +98,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
 }
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(userName: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -112,7 +113,7 @@ fun HeaderSection() {
                 letterSpacing = 1.sp
             )
             Text(
-                text = "¡HOLA, ANA!",
+                text = "¡HOLA, $userName!",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Black,
                 color = Color.White

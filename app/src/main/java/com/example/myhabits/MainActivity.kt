@@ -49,8 +49,8 @@ fun MyHabitsApp() {
         composable(Screen.Registration.route) {
             RegistrationScreen(
                 onRegistrationSuccess = {
-                    navController.navigate(Screen.MainHub.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Registration.route) { inclusive = true }
                     }
                 },
                 onBackToLogin = {

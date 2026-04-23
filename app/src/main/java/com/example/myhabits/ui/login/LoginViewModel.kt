@@ -1,6 +1,7 @@
 package com.example.myhabits.ui.login
 
 import androidx.lifecycle.ViewModel
+import com.example.myhabits.data.SessionManager
 import com.example.myhabits.data.UserDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ class LoginViewModel : ViewModel() {
         val user = UserDatabase.findUser(state.email, state.password)
         
         if (user != null) {
+            SessionManager.setCurrentUser(user)
             onSuccess()
         } else {
             if (UserDatabase.exists(state.email)) {

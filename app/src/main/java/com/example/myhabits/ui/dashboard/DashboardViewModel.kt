@@ -2,13 +2,20 @@ package com.example.myhabits.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewModelScope
 import com.example.myhabits.data.Habit
+import com.example.myhabits.data.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
 class DashboardViewModel : ViewModel() {
+    private val _userName = MutableStateFlow("USUARIO")
+    val userName: StateFlow<String> = _userName.asStateFlow()
+
     private val _habits = MutableStateFlow(
         listOf(
             Habit(1, "Entrenamiento Fuerza", "60 min", "Poder", Color(0xFFCCFF00), false, "🏋️"),
@@ -20,6 +27,12 @@ class DashboardViewModel : ViewModel() {
         )
     )
     val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
+
+    init {
+        SessionManager.currentUser.onEach { user ->
+            _userName.value = user?.name?.uppercase() ?: "USUARIO"
+        }.launchIn(viewModelScope)
+    }
 
     fun toggleHabit(habitId: Int) {
         _habits.update { currentHabits ->
