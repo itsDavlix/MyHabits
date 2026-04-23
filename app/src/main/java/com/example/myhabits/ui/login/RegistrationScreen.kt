@@ -26,7 +26,7 @@ import com.example.myhabits.ui.theme.MyHabitsTheme
 fun RegistrationScreen(
     onRegistrationSuccess: () -> Unit,
     onBackToLogin: () -> Unit,
-    viewModel: RegistrationViewModel = viewModel()
+    viewModel: RegistrationViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

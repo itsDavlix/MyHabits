@@ -4,21 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import com.example.myhabits.ui.dashboard.DashboardScreen
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.myhabits.ui.login.LoginScreen
 import com.example.myhabits.ui.login.RegistrationScreen
+import com.example.myhabits.ui.dashboard.MainHubScreen
+import com.example.myhabits.ui.navigation.Screen
 import com.example.myhabits.ui.theme.MyHabitsTheme
-
-enum class Screen {
-    LOGIN, REGISTRATION, DASHBOARD
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,32 +20,46 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyHabitsTheme {
-                var currentScreen by remember { mutableStateOf(Screen.LOGIN) }
-
-                Crossfade(targetState = currentScreen, label = "main_nav") { screen ->
-                    when (screen) {
-                        Screen.LOGIN -> {
-                            LoginScreen(
-                                onLoginSuccess = { currentScreen = Screen.DASHBOARD },
-                                onNavigateToRegistration = { currentScreen = Screen.REGISTRATION }
-                            )
-                        }
-                        Screen.REGISTRATION -> {
-                            RegistrationScreen(
-                                onRegistrationSuccess = { currentScreen = Screen.DASHBOARD },
-                                onBackToLogin = { currentScreen = Screen.LOGIN }
-                            )
-                        }
-                        Screen.DASHBOARD -> {
-                            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                                Box(modifier = Modifier.padding(innerPadding)) {
-                                    DashboardScreen()
-                                }
-                            }
-                        }
-                    }
-                }
+                MyHabitsApp()
             }
+        }
+    }
+}
+
+@Composable
+fun MyHabitsApp() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Login.route
+    ) {
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.MainHub.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onNavigateToRegistration = {
+                    navController.navigate(Screen.Registration.route)
+                }
+            )
+        }
+        composable(Screen.Registration.route) {
+            RegistrationScreen(
+                onRegistrationSuccess = {
+                    navController.navigate(Screen.MainHub.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.MainHub.route) {
+            MainHubScreen()
         }
     }
 }
