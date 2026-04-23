@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.myhabits.data.Habit
 import com.example.myhabits.ui.theme.MyHabitsTheme
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -59,7 +61,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            HealthProgressCard(progress)
+            HealthProgressCard(progress, completedCount, totalCount)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -99,6 +101,19 @@ fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
 
 @Composable
 fun HeaderSection(userName: String) {
+    val (greeting, emoji) = remember {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        when (hour) {
+            in 5..12 -> "Buenos días" to "☀️"
+            in 13..20 -> "Buenas tardes" to "🌤️"
+            else -> "Buenas noches" to "🌙"
+        }
+    }
+    
+    val firstName = remember(userName) {
+        userName.split(" ").firstOrNull() ?: "ATLETA"
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -106,14 +121,14 @@ fun HeaderSection(userName: String) {
     ) {
         Column {
             Text(
-                text = "TU PROGRESO",
-                style = MaterialTheme.typography.labelSmall,
+                text = "$greeting $emoji,",
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = EnergyLime,
                 letterSpacing = 1.sp
             )
             Text(
-                text = "¡HOLA, $userName!",
+                text = firstName,
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Black,
                 color = Color.White
@@ -181,7 +196,7 @@ fun WeeklyStatsSection() {
 }
 
 @Composable
-fun HealthProgressCard(progress: Float) {
+fun HealthProgressCard(progress: Float, completed: Int, total: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -202,14 +217,14 @@ fun HealthProgressCard(progress: Float) {
                         color = EnergyLime
                     )
                     Text(
-                        text = "Objetivos cumplidos",
+                        text = "$completed de $total completados",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.7f)
                     )
                 }
                 Text(
                     text = "${(progress * 100).toInt()}%",
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Black,
                     color = Color.White
                 )
@@ -251,61 +266,74 @@ fun HealthProgressCard(progress: Float) {
 @Composable
 fun HealthHabitItem(habit: Habit, onToggle: () -> Unit) {
     val bgByState by animateColorAsState(
-        targetValue = if (habit.isCompleted) EnergyLime.copy(alpha = 0.08f) else DarkSurface,
+        targetValue = if (habit.isCompleted) EnergyLime.copy(alpha = 0.12f) else DarkSurface,
         label = "bg"
     )
 
     Surface(
         onClick = onToggle,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp),
         shape = RoundedCornerShape(16.dp),
         color = bgByState,
+        tonalElevation = if (habit.isCompleted) 0.dp else 4.dp,
         border = BorderStroke(
             1.dp, 
-            if (habit.isCompleted) EnergyLime.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.05f)
+            if (habit.isCompleted) EnergyLime.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.08f)
         )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icono con círculo de fondo dinámico
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(habit.categoryColor.copy(alpha = 0.15f)),
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        if (habit.isCompleted) EnergyLime.copy(alpha = 0.2f) 
+                        else habit.categoryColor.copy(alpha = 0.1f)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = habit.icon, fontSize = 22.sp)
+                Text(
+                    text = habit.icon, 
+                    fontSize = 22.sp,
+                    modifier = Modifier.padding(4.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(18.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = habit.name,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (habit.isCompleted) EnergyLime else Color.White,
+                    textDecoration = if (habit.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
                 )
                 Text(
-                    text = "${habit.category} • ${habit.goal}",
+                    text = "${habit.category} | ${habit.goal}",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color.White.copy(alpha = 0.5f)
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            // Checkbox Minimalista
-            Surface(
-                modifier = Modifier.size(24.dp),
-                shape = CircleShape,
-                color = if (habit.isCompleted) EnergyLime else Color.Transparent,
-                border = BorderStroke(2.dp, if (habit.isCompleted) EnergyLime else Color.White.copy(alpha = 0.2f))
+            // Checkbox con Animación
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(if (habit.isCompleted) EnergyLime else Color.Transparent)
+                    .border(2.dp, if (habit.isCompleted) EnergyLime else Color.White.copy(alpha = 0.3f), CircleShape),
+                contentAlignment = Alignment.Center
             ) {
                 if (habit.isCompleted) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text("✓", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 14.sp)
-                    }
+                    Text("✓", fontWeight = FontWeight.Black, color = Color.Black, fontSize = 16.sp)
                 }
             }
         }

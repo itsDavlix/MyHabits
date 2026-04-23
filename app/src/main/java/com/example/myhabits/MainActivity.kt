@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -29,6 +29,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyHabitsApp() {
     val navController = rememberNavController()
+    val currentUser by com.example.myhabits.data.SessionManager.currentUser.collectAsState()
+
+    // Manejar cierre de sesión automático
+    LaunchedEffect(currentUser) {
+        if (currentUser == null) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     NavHost(
         navController = navController,

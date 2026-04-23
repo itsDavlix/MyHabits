@@ -1,14 +1,15 @@
 package com.example.myhabits.ui.dashboard
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -39,9 +40,55 @@ fun MainHubScreen() {
                     PlaceholderScreen("Estadísticas de Salud")
                 }
                 composable(BottomBarScreen.Profile.route) {
-                    PlaceholderScreen("Perfil del Atleta")
+                    ProfileScreen()
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen() {
+    val user by com.example.myhabits.data.SessionManager.currentUser.collectAsState()
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0A0A0A))
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "👤",
+            fontSize = 80.sp,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        Text(
+            text = user?.name?.uppercase() ?: "ATLETA",
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Black
+        )
+        Text(
+            text = user?.email ?: "",
+            color = Color.White.copy(alpha = 0.5f),
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 48.dp)
+        )
+        
+        Button(
+            onClick = { 
+                com.example.myhabits.data.SessionManager.setCurrentUser(null)
+                // Navigation to login will be handled by the main NavHost 
+                // but we need to trigger it. Actually we don't have direct access here.
+                // In a real app we'd use a shared ViewModel or callback.
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.7f)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
         }
     }
 }
