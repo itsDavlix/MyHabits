@@ -2,6 +2,7 @@ package com.example.myhabits.ui.login
 
 import androidx.lifecycle.ViewModel
 import com.example.myhabits.data.User
+import com.example.myhabits.data.UserDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,18 +10,28 @@ import kotlinx.coroutines.flow.update
 
 class RegistrationViewModel : ViewModel() {
     
-    // Mock de base de datos de usuarios (CRUD: Create/Read)
-    private val _registeredUsers = MutableStateFlow<List<User>>(emptyList())
-    
     private val _uiState = MutableStateFlow(RegistrationUiState())
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
 
     fun onNameChange(newName: String) {
-        _uiState.update { it.copy(name = newName, nameError = null) }
+        // Asegura que la primera letra siempre sea mayúscula
+        val formattedName = if (newName.isNotEmpty()) {
+            newName.replaceFirstChar { it.uppercase() }
+        } else {
+            newName
+        }
+        _uiState.update { it.copy(name = formattedName, nameError = null) }
     }
 
     fun onEmailChange(newEmail: String) {
         _uiState.update { it.copy(email = newEmail, emailError = null) }
+    }
+
+    fun validateEmailOnBlur() {
+        val email = _uiState.value.email
+        if (email.isNotEmpty() && !isValidEmail(email)) {
+            _uiState.update { it.copy(emailError = "Formato de correo inválido") }
+        }
     }
 
     fun onAliasChange(newAlias: String) {
@@ -43,30 +54,39 @@ class RegistrationViewModel : ViewModel() {
         val state = _uiState.value
         var hasError = false
 
-        // Validaciones
-        if (!isFirstLetterUppercase(state.name)) {
-            _uiState.update { it.copy(nameError = "La primera letra debe ser mayúscula") }
+        // Validación: Campos vacíos
+        if (state.name.isBlank()) {
+            _uiState.update { it.copy(nameError = "El nombre es obligatorio") }
             hasError = true
         }
 
-        if (!isValidEmail(state.email)) {
+        if (state.email.isBlank()) {
+            _uiState.update { it.copy(emailError = "El correo es obligatorio") }
+            hasError = true
+        } else if (!isValidEmail(state.email)) {
             _uiState.update { it.copy(emailError = "Formato de correo inválido") }
             hasError = true
         }
 
         if (state.alias.isBlank()) {
-            _uiState.update { it.copy(aliasError = "El alias no puede estar vacío") }
+            _uiState.update { it.copy(aliasError = "El alias es obligatorio") }
+            hasError = true
+        } else if (UserDatabase.exists(state.alias)) {
+            _uiState.update { it.copy(aliasError = "Este alias ya está registrado") }
             hasError = true
         }
 
-        if (state.password.length < 6) {
+        if (state.password.isBlank()) {
+            _uiState.update { it.copy(passwordError = "La contraseña es obligatoria") }
+            hasError = true
+        } else if (state.password.length < 6) {
             _uiState.update { it.copy(passwordError = "Mínimo 6 caracteres") }
             hasError = true
         }
 
         if (!hasError) {
             val newUser = User(state.name, state.email, state.alias, state.password)
-            _registeredUsers.update { it + newUser }
+            UserDatabase.addUser(newUser)
             onSuccess()
         }
     }

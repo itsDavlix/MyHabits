@@ -1,0 +1,26 @@
+package com.example.myhabits.data
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+/**
+ * Simulación de base de datos persistente en memoria para el prototipo.
+ */
+object UserDatabase {
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: StateFlow<List<User>> = _users.asStateFlow()
+
+    fun addUser(user: User) {
+        _users.update { it + user }
+    }
+
+    fun findUser(alias: String, password: String): User? {
+        return _users.value.find { it.alias == alias && it.password == password }
+    }
+
+    fun exists(alias: String): Boolean {
+        return _users.value.any { it.alias == alias }
+    }
+}

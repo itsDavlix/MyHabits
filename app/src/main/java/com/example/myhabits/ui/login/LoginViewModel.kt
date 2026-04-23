@@ -1,6 +1,7 @@
 package com.example.myhabits.ui.login
 
 import androidx.lifecycle.ViewModel
+import com.example.myhabits.data.UserDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,14 +23,30 @@ class LoginViewModel : ViewModel() {
     fun login(onSuccess: () -> Unit) {
         val state = _uiState.value
         
-        // Lógica de "Read" simple: Validar que no estén vacíos
-        if (state.userId.isBlank() || state.password.isBlank()) {
-            _uiState.update { it.copy(error = "Campos obligatorios") }
+        // Validación: Campos vacíos
+        if (state.userId.isBlank()) {
+            _uiState.update { it.copy(error = "Ingresa tu usuario") }
+            return
+        }
+        if (state.password.isBlank()) {
+            _uiState.update { it.copy(error = "Ingresa tu contraseña") }
             return
         }
 
-        // Simulación de validación exitosa
-        onSuccess()
+        // Lógica de validación contra "Base de Datos"
+        val user = UserDatabase.findUser(state.userId, state.password)
+        
+        if (user != null) {
+            onSuccess()
+        } else {
+            // Verificamos si es que el usuario existe pero la contraseña está mal, 
+            // o si el usuario ni siquiera existe.
+            if (UserDatabase.exists(state.userId)) {
+                _uiState.update { it.copy(error = "Contraseña incorrecta") }
+            } else {
+                _uiState.update { it.copy(error = "El usuario no existe. Regístrate primero.") }
+            }
+        }
     }
 }
 

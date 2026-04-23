@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,7 +29,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color(0xFF0A0A0A)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -43,16 +42,15 @@ fun LoginScreen(
                 text = "MYHABITS",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black,
-                fontStyle = FontStyle.Italic,
-                color = Color(0xFFCCFF00), // Neon Volt
+                color = Color(0xFFD4FF00),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             
             Text(
-                text = "MEJORA TU RENDIMIENTO",
+                text = "TU SALUD, TU PRIORIDAD",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
+                letterSpacing = 1.5.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.padding(bottom = 48.dp)
             )
@@ -60,14 +58,15 @@ fun LoginScreen(
             OutlinedTextField(
                 value = uiState.userId,
                 onValueChange = { viewModel.onUserIdChange(it) },
-                label = { Text("ID DE USUARIO", color = Color.White.copy(alpha = 0.4f)) },
+                label = { Text("USUARIO / ID", color = Color.White.copy(alpha = 0.4f)) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedBorderColor = Color(0xFFCCFF00),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f)
+                    focusedBorderColor = Color(0xFFD4FF00),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    errorBorderColor = Color.Red
                 ),
                 isError = uiState.error != null,
                 leadingIcon = { Text("👤", modifier = Modifier.padding(start = 12.dp)) }
@@ -80,12 +79,13 @@ fun LoginScreen(
                 onValueChange = { viewModel.onPasswordChange(it) },
                 label = { Text("CONTRASEÑA", color = Color.White.copy(alpha = 0.4f)) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedBorderColor = Color(0xFFCCFF00),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f)
+                    focusedBorderColor = Color(0xFFD4FF00),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    errorBorderColor = Color.Red
                 ),
                 isError = uiState.error != null,
                 visualTransformation = PasswordVisualTransformation(),
@@ -108,23 +108,23 @@ fun LoginScreen(
                 onClick = { viewModel.login(onLoginSuccess) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp),
-                shape = RoundedCornerShape(4.dp),
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFCCFF00),
+                    containerColor = Color(0xFFD4FF00),
                     contentColor = Color.Black
                 )
             ) {
                 Text(
-                    text = "ENTRAR AL ARENA",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Black
+                    text = "INICIAR SESIÓN",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
             
             TextButton(onClick = onNavigateToRegistration) {
                 Text(
-                    text = "¿NUEVO RECLUTA? REGÍSTRATE AQUÍ",
+                    text = "¿NO TIENES CUENTA? REGÍSTRATE",
                     color = Color.White.copy(alpha = 0.6f),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
