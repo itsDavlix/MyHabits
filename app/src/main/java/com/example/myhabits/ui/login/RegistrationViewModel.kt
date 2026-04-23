@@ -27,6 +27,10 @@ class RegistrationViewModel : ViewModel() {
         _uiState.update { it.copy(email = newEmail, emailError = null) }
     }
 
+    fun onPasswordChange(newPassword: String) {
+        _uiState.update { it.copy(password = newPassword, passwordError = null) }
+    }
+
     fun validateEmailOnBlur() {
         val email = _uiState.value.email
         if (email.isNotEmpty() && !isValidEmail(email)) {
@@ -34,20 +38,8 @@ class RegistrationViewModel : ViewModel() {
         }
     }
 
-    fun onAliasChange(newAlias: String) {
-        _uiState.update { it.copy(alias = newAlias, aliasError = null) }
-    }
-
-    fun onPasswordChange(newPassword: String) {
-        _uiState.update { it.copy(password = newPassword, passwordError = null) }
-    }
-
     private fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private fun isFirstLetterUppercase(text: String): Boolean {
-        return text.isNotEmpty() && text[0].isUpperCase()
     }
 
     fun registerUser(onSuccess: () -> Unit) {
@@ -66,13 +58,8 @@ class RegistrationViewModel : ViewModel() {
         } else if (!isValidEmail(state.email)) {
             _uiState.update { it.copy(emailError = "Formato de correo inválido") }
             hasError = true
-        }
-
-        if (state.alias.isBlank()) {
-            _uiState.update { it.copy(aliasError = "El alias es obligatorio") }
-            hasError = true
-        } else if (UserDatabase.exists(state.alias)) {
-            _uiState.update { it.copy(aliasError = "Este alias ya está registrado") }
+        } else if (UserDatabase.exists(state.email)) {
+            _uiState.update { it.copy(emailError = "Este correo ya está registrado") }
             hasError = true
         }
 
@@ -85,7 +72,7 @@ class RegistrationViewModel : ViewModel() {
         }
 
         if (!hasError) {
-            val newUser = User(state.name, state.email, state.alias, state.password)
+            val newUser = User(state.name, state.email, state.password)
             UserDatabase.addUser(newUser)
             onSuccess()
         }
@@ -97,8 +84,6 @@ data class RegistrationUiState(
     val nameError: String? = null,
     val email: String = "",
     val emailError: String? = null,
-    val alias: String = "",
-    val aliasError: String? = null,
     val password: String = "",
     val passwordError: String? = null
 )

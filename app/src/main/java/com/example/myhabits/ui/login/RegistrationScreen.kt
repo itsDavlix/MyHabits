@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,12 +48,13 @@ fun RegistrationScreen(
                 text = "REGISTRO",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Black,
+                fontStyle = FontStyle.Italic,
                 color = Color(0xFFD4FF00),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Text(
-                text = "EMPIEZA TU CAMINO HOY",
+                text = "ÚNETE AL EQUIPO ELITE",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp,
@@ -102,25 +104,6 @@ fun RegistrationScreen(
                 supportingText = { uiState.emailError?.let { Text(it, color = Color.Red) } },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = uiState.alias,
-                onValueChange = { viewModel.onAliasChange(it) },
-                label = { Text("ALIAS / USUARIO", color = Color.White.copy(alpha = 0.4f)) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedBorderColor = Color(0xFFD4FF00),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f)
-                ),
-                isError = uiState.aliasError != null,
-                supportingText = { uiState.aliasError?.let { Text(it, color = Color.Red) } },
-                leadingIcon = { Text("🆔", modifier = Modifier.padding(start = 12.dp)) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))

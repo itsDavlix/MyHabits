@@ -16,11 +16,11 @@ object UserDatabase {
         _users.update { it + user }
     }
 
-    fun findUser(alias: String, password: String): User? {
-        return _users.value.find { it.alias == alias && it.password == password }
+    fun findUser(email: String, password: String): User? {
+        return _users.value.find { it.email == email && it.password == password }
     }
 
-    fun exists(alias: String): Boolean {
-        return _users.value.any { it.alias == alias }
+    fun exists(email: String): Boolean {
+        return _users.value.any { it.email == email }
     }
 }

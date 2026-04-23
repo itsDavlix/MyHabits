@@ -56,9 +56,9 @@ fun LoginScreen(
             )
 
             OutlinedTextField(
-                value = uiState.userId,
-                onValueChange = { viewModel.onUserIdChange(it) },
-                label = { Text("USUARIO / ID", color = Color.White.copy(alpha = 0.4f)) },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChange(it) },
+                label = { Text("CORREO ELECTRÓNICO", color = Color.White.copy(alpha = 0.4f)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -69,7 +69,8 @@ fun LoginScreen(
                     errorBorderColor = Color.Red
                 ),
                 isError = uiState.error != null,
-                leadingIcon = { Text("👤", modifier = Modifier.padding(start = 12.dp)) }
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

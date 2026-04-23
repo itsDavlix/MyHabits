@@ -12,8 +12,8 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun onUserIdChange(newId: String) {
-        _uiState.update { it.copy(userId = newId, error = null) }
+    fun onEmailChange(newEmail: String) {
+        _uiState.update { it.copy(email = newEmail, error = null) }
     }
 
     fun onPasswordChange(newPassword: String) {
@@ -24,8 +24,8 @@ class LoginViewModel : ViewModel() {
         val state = _uiState.value
         
         // Validación: Campos vacíos
-        if (state.userId.isBlank()) {
-            _uiState.update { it.copy(error = "Ingresa tu usuario") }
+        if (state.email.isBlank()) {
+            _uiState.update { it.copy(error = "Ingresa tu correo electrónico") }
             return
         }
         if (state.password.isBlank()) {
@@ -33,25 +33,23 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        // Lógica de validación contra "Base de Datos"
-        val user = UserDatabase.findUser(state.userId, state.password)
+        // Lógica de validación contra "Base de Datos" usando email
+        val user = UserDatabase.findUser(state.email, state.password)
         
         if (user != null) {
             onSuccess()
         } else {
-            // Verificamos si es que el usuario existe pero la contraseña está mal, 
-            // o si el usuario ni siquiera existe.
-            if (UserDatabase.exists(state.userId)) {
+            if (UserDatabase.exists(state.email)) {
                 _uiState.update { it.copy(error = "Contraseña incorrecta") }
             } else {
-                _uiState.update { it.copy(error = "El usuario no existe. Regístrate primero.") }
+                _uiState.update { it.copy(error = "El correo no está registrado.") }
             }
         }
     }
 }
 
 data class LoginUiState(
-    val userId: String = "",
+    val email: String = "",
     val password: String = "",
     val error: String? = null
 )
