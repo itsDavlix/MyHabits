@@ -9,5 +9,8 @@ data class Habit(
     val category: String,
     val categoryColor: Color,
     val isCompleted: Boolean = false,
-    val icon: String = "✨"
+    val icon: String = "✨",
+    val frequency: String = "Diaria",
+    val isFavorite: Boolean = false,
+    val isPaused: Boolean = false
 )

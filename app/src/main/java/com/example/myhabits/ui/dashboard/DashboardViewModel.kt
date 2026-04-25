@@ -42,17 +42,54 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    fun addRandomHabit() {
+    fun addHabit(
+        name: String,
+        goal: String,
+        category: String,
+        color: Color,
+        icon: String,
+        frequency: String
+    ) {
         val nextId = (_habits.value.maxOfOrNull { it.id } ?: 0) + 1
         val newHabit = Habit(
-            nextId, 
-            "Nueva Meta $nextId", 
-            "¡Vamos!", 
-            "Entreno",
-            Color(0xFFCCFF00), 
-            false, 
-            "🔥"
+            id = nextId,
+            name = name,
+            goal = goal,
+            category = category,
+            categoryColor = color,
+            icon = icon,
+            frequency = frequency
         )
         _habits.update { it + newHabit }
+    }
+
+    fun updateHabit(updatedHabit: Habit) {
+        _habits.update { currentHabits ->
+            currentHabits.map {
+                if (it.id == updatedHabit.id) updatedHabit else it
+            }
+        }
+    }
+
+    fun deleteHabit(habitId: Int) {
+        _habits.update { currentHabits ->
+            currentHabits.filter { it.id != habitId }
+        }
+    }
+
+    fun toggleFavorite(habitId: Int) {
+        _habits.update { currentHabits ->
+            currentHabits.map {
+                if (it.id == habitId) it.copy(isFavorite = !it.isFavorite) else it
+            }
+        }
+    }
+
+    fun togglePaused(habitId: Int) {
+        _habits.update { currentHabits ->
+            currentHabits.map {
+                if (it.id == habitId) it.copy(isPaused = !it.isPaused) else it
+            }
+        }
     }
 }

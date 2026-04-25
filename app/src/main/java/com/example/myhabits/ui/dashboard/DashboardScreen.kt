@@ -10,38 +10,67 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myhabits.data.Habit
-import com.example.myhabits.ui.theme.MyHabitsTheme
-import java.text.SimpleDateFormat
+import com.example.myhabits.ui.theme.*
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-
-// Paleta Deportiva Profesional
-val DeepBlack = Color(0xFF0A0A0A)
-val DarkSurface = Color(0xFF1E1E1E)
-val EnergyLime = Color(0xFFD4FF00)
-val HealthBlue = Color(0xFF00D2FF)
 
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
+fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
     val habits by viewModel.habits.collectAsState()
     val userName by viewModel.userName.collectAsState()
-    val completedCount = habits.count { it.isCompleted }
-    val totalCount = habits.size
+    
+    val sortedHabits = remember(habits) {
+        habits.sortedByDescending { it.isFavorite }
+    }
+    
+    val activeHabits = habits.filter { !it.isPaused }
+    val completedCount = activeHabits.count { it.isCompleted }
+    val totalCount = activeHabits.size
     val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
+
+    var showHabitDialog by remember { mutableStateOf(false) }
+    var habitToEdit by remember { mutableStateOf<Habit?>(null) }
+
+    if (showHabitDialog) {
+        HabitDialog(
+            habit = habitToEdit,
+            onDismiss = { 
+                showHabitDialog = false
+                habitToEdit = null
+            },
+            onConfirm = { name, goal, category, color, icon, frequency ->
+                if (habitToEdit == null) {
+                    viewModel.addHabit(name, goal, category, color, icon, frequency)
+                } else {
+                    viewModel.updateHabit(habitToEdit!!.copy(
+                        name = name,
+                        goal = goal,
+                        category = category,
+                        categoryColor = color,
+                        icon = icon,
+                        frequency = frequency
+                    ))
+                }
+                showHabitDialog = false
+                habitToEdit = null
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -79,14 +108,30 @@ fun DashboardScreen(viewModel: DashboardViewModel = DashboardViewModel()) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(habits) { habit ->
-                    HealthHabitItem(habit) { viewModel.toggleHabit(habit.id) }
+                items(
+                    items = sortedHabits,
+                    key = { it.id }
+                ) { habit ->
+                    HealthHabitItem(
+                        habit = habit,
+                        onToggle = { viewModel.toggleHabit(habit.id) },
+                        onEdit = {
+                            habitToEdit = habit
+                            showHabitDialog = true
+                        },
+                        onDelete = { viewModel.deleteHabit(habit.id) },
+                        onFavorite = { viewModel.toggleFavorite(habit.id) },
+                        onPause = { viewModel.togglePaused(habit.id) }
+                    )
                 }
             }
         }
 
         FloatingActionButton(
-            onClick = { viewModel.addRandomHabit() },
+            onClick = { 
+                habitToEdit = null
+                showHabitDialog = true 
+            },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),
@@ -264,30 +309,48 @@ fun HealthProgressCard(progress: Float, completed: Int, total: Int) {
 }
 
 @Composable
-fun HealthHabitItem(habit: Habit, onToggle: () -> Unit) {
+fun HealthHabitItem(
+    habit: Habit, 
+    onToggle: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onFavorite: () -> Unit,
+    onPause: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     val bgByState by animateColorAsState(
-        targetValue = if (habit.isCompleted) EnergyLime.copy(alpha = 0.12f) else DarkSurface,
+        targetValue = when {
+            habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
+            habit.isCompleted -> EnergyLime.copy(alpha = 0.12f)
+            else -> DarkSurface
+        },
         label = "bg"
     )
 
     Surface(
-        onClick = onToggle,
+        onClick = if (!habit.isPaused) onToggle else ({}),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 2.dp),
+            .padding(horizontal = 2.dp)
+            .alpha(if (habit.isPaused) 0.5f else 1f),
         shape = RoundedCornerShape(16.dp),
         color = bgByState,
         tonalElevation = if (habit.isCompleted) 0.dp else 4.dp,
         border = BorderStroke(
             1.dp, 
-            if (habit.isCompleted) EnergyLime.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.08f)
+            when {
+                habit.isPaused -> Color.White.copy(alpha = 0.05f)
+                habit.isCompleted -> EnergyLime.copy(alpha = 0.6f)
+                else -> Color.White.copy(alpha = 0.08f)
+            }
         )
     ) {
         Row(
             modifier = Modifier.padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono con círculo de fondo dinámico
+            // Icono
             Box(
                 modifier = Modifier
                     .size(46.dp)
@@ -308,13 +371,24 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit) {
             Spacer(modifier = Modifier.width(18.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = habit.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (habit.isCompleted) EnergyLime else Color.White,
-                    textDecoration = if (habit.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = habit.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (habit.isCompleted) EnergyLime else Color.White,
+                        textDecoration = if (habit.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                    )
+                    if (habit.isFavorite) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            Icons.Default.Favorite, 
+                            contentDescription = null, 
+                            tint = EnergyLime, 
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
                 Text(
                     text = "${habit.category} | ${habit.goal}",
                     style = MaterialTheme.typography.labelMedium,
@@ -323,7 +397,64 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit) {
                 )
             }
 
-            // Checkbox con Animación
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White.copy(alpha = 0.4f))
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    modifier = Modifier.background(DarkSurface)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Editar", color = Color.White) },
+                        onClick = {
+                            showMenu = false
+                            onEdit()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(if (habit.isFavorite) "Quitar favorito" else "Favorito", color = Color.White) },
+                        onClick = {
+                            showMenu = false
+                            onFavorite()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                if (habit.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = null,
+                                tint = EnergyLime
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(if (habit.isPaused) "Reanudar" else "Pausar", color = Color.White) },
+                        onClick = {
+                            showMenu = false
+                            onPause()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                if (habit.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                                contentDescription = null,
+                                tint = HealthBlue
+                            )
+                        }
+                    )
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                    DropdownMenuItem(
+                        text = { Text("Eliminar", color = Color.Red) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Checkbox
             Box(
                 modifier = Modifier
                     .size(26.dp)
