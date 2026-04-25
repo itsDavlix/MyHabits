@@ -28,6 +28,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myhabits.data.Habit
 import com.example.myhabits.ui.theme.*
 import java.util.Calendar
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun DashboardScreen(
@@ -36,7 +38,6 @@ fun DashboardScreen(
 ) {
     val habits by viewModel.habits.collectAsState()
     val userName by viewModel.userName.collectAsState()
-    
     val statsState = statsViewModel?.uiState?.collectAsState()?.value ?: StatsState()
     
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
@@ -52,11 +53,19 @@ fun DashboardScreen(
         HabitDialog(
             habit = habitToEdit,
             onDismiss = { showDialog = false; habitToEdit = null },
-            onConfirm = { name, goal, category, color, icon, frequency ->
+            onConfirm = { name, goal, category, color, icon, frequency, reminderTime ->
                 if (habitToEdit == null) {
-                    viewModel.addHabit(name, goal, category, color, icon, frequency)
+                    viewModel.addHabit(name, goal, category, color, icon, frequency, reminderTime)
                 } else {
-                    viewModel.updateHabit(habitToEdit!!.copy(name = name, goal = goal, category = category, categoryColor = color, icon = icon, frequency = frequency))
+                    viewModel.updateHabit(habitToEdit!!.copy(
+                        name = name, 
+                        goal = goal, 
+                        category = category, 
+                        categoryColor = color, 
+                        icon = icon, 
+                        frequency = frequency,
+                        reminderTime = reminderTime
+                    ))
                 }
                 showDialog = false
                 habitToEdit = null
@@ -273,6 +282,7 @@ private fun HabitIcon(habit: Habit) {
 
 @Composable
 private fun HabitInfo(habit: Habit, modifier: Modifier) {
+    val reminderFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -286,7 +296,18 @@ private fun HabitInfo(habit: Habit, modifier: Modifier) {
                 Icon(Icons.Default.Favorite, null, tint = EnergyLime, modifier = Modifier.padding(start = 8.dp).size(16.dp))
             }
         }
-        Text(text = "${habit.category} | ${habit.goal}", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.4f))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "${habit.category} | ${habit.goal}", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.4f))
+            habit.reminderTime?.let { time ->
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "⏰ ${time.format(reminderFormatter)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = EnergyLime.copy(alpha = 0.6f),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 

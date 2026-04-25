@@ -2,6 +2,7 @@ package com.example.myhabits.data
 
 import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
+import java.time.LocalTime
 
 data class Habit(
     val id: Int,
@@ -14,5 +15,6 @@ data class Habit(
     val frequency: String = "Diaria",
     val isFavorite: Boolean = false,
     val isPaused: Boolean = false,
-    val completions: List<LocalDate> = emptyList()
+    val completions: List<LocalDate> = emptyList(),
+    val reminderTime: LocalTime? = null
 )

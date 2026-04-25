@@ -1,14 +1,16 @@
 package com.example.myhabits.ui.dashboard
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myhabits.data.Habit
 import com.example.myhabits.data.SessionManager
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
+import java.time.LocalTime
 
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
     private val _userName = MutableStateFlow("USUARIO")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
@@ -19,6 +21,8 @@ class DashboardViewModel : ViewModel() {
         SessionManager.currentUser
             .onEach { user -> _userName.value = user?.name?.uppercase() ?: "USUARIO" }
             .launchIn(viewModelScope)
+        
+        NotificationHelper.createNotificationChannel(application)
     }
 
     private fun updateHabitState(habitId: Int, transform: (Habit) -> Habit) {
@@ -45,19 +49,50 @@ class DashboardViewModel : ViewModel() {
     
     fun toggleFavorite(habitId: Int) = updateHabitState(habitId) { it.copy(isFavorite = !it.isFavorite) }
     
-    fun togglePaused(habitId: Int) = updateHabitState(habitId) { it.copy(isPaused = !it.isPaused) }
+    fun togglePaused(habitId: Int) {
+        updateHabitState(habitId) { habit ->
+            val newPaused = !habit.isPaused
+            if (newPaused) {
+                ReminderManager.cancelReminder(getApplication(), habit.id)
+            } else {
+                habit.reminderTime?.let { time ->
+                    ReminderManager.scheduleReminder(getApplication(), habit.id, habit.name, time)
+                }
+            }
+            habit.copy(isPaused = newPaused)
+        }
+    }
 
-    fun addHabit(name: String, goal: String, category: String, color: Color, icon: String, frequency: String) {
+    fun addHabit(name: String, goal: String, category: String, color: Color, icon: String, frequency: String, reminderTime: LocalTime? = null) {
         val nextId = (_habits.value.maxOfOrNull { it.id } ?: 0) + 1
-        _habits.update { it + Habit(nextId, name, goal, category, color, false, icon, frequency) }
+        val newHabit = Habit(nextId, name, goal, category, color, false, icon, frequency, reminderTime = reminderTime)
+        _habits.update { it + newHabit }
+        
+        reminderTime?.let { time ->
+            ReminderManager.scheduleReminder(getApplication(), nextId, name, time)
+        }
     }
 
     fun updateHabit(updatedHabit: Habit) {
-        _habits.update { current -> current.map { if (it.id == updatedHabit.id) updatedHabit else it } }
+        _habits.update { current -> 
+            current.map { 
+                if (it.id == updatedHabit.id) {
+                    if (it.reminderTime != updatedHabit.reminderTime) {
+                        if (updatedHabit.reminderTime != null && !updatedHabit.isPaused) {
+                            ReminderManager.scheduleReminder(getApplication(), updatedHabit.id, updatedHabit.name, updatedHabit.reminderTime)
+                        } else {
+                            ReminderManager.cancelReminder(getApplication(), updatedHabit.id)
+                        }
+                    }
+                    updatedHabit 
+                } else it 
+            } 
+        }
     }
 
     fun deleteHabit(habitId: Int) {
         _habits.update { it.filter { h -> h.id != habitId } }
+        ReminderManager.cancelReminder(getApplication(), habitId)
     }
 
     private fun getDefaultHabits() = listOf(

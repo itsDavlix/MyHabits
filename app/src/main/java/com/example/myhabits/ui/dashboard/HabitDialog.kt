@@ -22,13 +22,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.myhabits.data.Habit
 import com.example.myhabits.ui.theme.*
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitDialog(
     habit: Habit? = null,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, Color, String, String) -> Unit
+    onConfirm: (String, String, String, Color, String, String, LocalTime?) -> Unit
 ) {
     var name by remember { mutableStateOf(habit?.name ?: "") }
     var category by remember { mutableStateOf(habit?.category ?: "") }
@@ -36,6 +38,13 @@ fun HabitDialog(
     var selectedColor by remember { mutableStateOf(habit?.categoryColor ?: EnergyLime) }
     var selectedIcon by remember { mutableStateOf(habit?.icon ?: "✨") }
     var frequency by remember { mutableStateOf(habit?.frequency ?: "Diaria") }
+    var reminderTime by remember { mutableStateOf(habit?.reminderTime) }
+    
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = reminderTime?.hour ?: 10,
+        initialMinute = reminderTime?.minute ?: 0
+    )
     
     val daysOfWeek = listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
     var selectedDays by remember { 
@@ -74,13 +83,35 @@ fun HabitDialog(
                 SectionHeader("ÍCONO")
                 IconPicker(selectedIcon) { selectedIcon = it }
 
+                SectionHeader("RECORDATORIO")
+                ReminderSelector(reminderTime, { showTimePicker = true }, { reminderTime = null })
+
+                if (showTimePicker) {
+                    TimePickerDialog(
+                        onDismissRequest = { showTimePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                reminderTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                                showTimePicker = false
+                            }) { Text("OK", color = EnergyLime) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showTimePicker = false }) { Text("CANCELAR", color = Color.White.copy(alpha = 0.6f)) }
+                        }
+                    ) {
+                        Box(modifier = Modifier.padding(24.dp), contentAlignment = Alignment.Center) {
+                            TimePicker(state = timePickerState)
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
                         if (name.isNotBlank() && goal.isNotBlank() && category.isNotBlank()) {
                             val finalFreq = if (frequency == "Días específicos") selectedDays.joinToString(", ") else frequency
-                            onConfirm(name, goal, category, selectedColor, selectedIcon, finalFreq)
+                            onConfirm(name, goal, category, selectedColor, selectedIcon, finalFreq, reminderTime)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -97,6 +128,23 @@ fun HabitDialog(
             }
         }
     }
+}
+
+@Composable
+fun TimePickerDialog(
+    onDismissRequest: () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = confirmButton,
+        dismissButton = dismissButton,
+        text = content,
+        containerColor = DarkSurface,
+        shape = RoundedCornerShape(24.dp)
+    )
 }
 
 @Composable
@@ -184,6 +232,38 @@ private fun IconPicker(selected: String, onSelect: (String) -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = icon, fontSize = 20.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderSelector(time: LocalTime?, onSet: () -> Unit, onClear: () -> Unit) {
+    val formatter = DateTimeFormatter.ofPattern("hh:mm a")
+    Surface(
+        onClick = onSet,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.05f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "⏰", fontSize = 20.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = time?.format(formatter) ?: "Sin recordatorio",
+                    color = if (time != null) EnergyLime else Color.White.copy(alpha = 0.5f),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            if (time != null) {
+                IconButton(onClick = { onClear() }, modifier = Modifier.size(24.dp)) {
+                    Text(text = "✕", color = Color.Red, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
