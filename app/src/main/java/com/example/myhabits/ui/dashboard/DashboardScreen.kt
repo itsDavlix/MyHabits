@@ -30,9 +30,14 @@ import com.example.myhabits.ui.theme.*
 import java.util.Calendar
 
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
+fun DashboardScreen(
+    viewModel: DashboardViewModel = viewModel(),
+    statsViewModel: StatsViewModel? = null
+) {
     val habits by viewModel.habits.collectAsState()
     val userName by viewModel.userName.collectAsState()
+    
+    val statsState = statsViewModel?.uiState?.collectAsState()?.value ?: StatsState()
     
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
     val activeHabits = habits.filter { !it.isPaused }
@@ -63,6 +68,12 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
         Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
             HeaderSection(userName)
             Spacer(modifier = Modifier.height(24.dp))
+            
+            if (statsState.currentStreak > 0) {
+                StreakBanner(statsState.streakMessage, statsState.motivationMessage)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
             WeeklyStatsSection()
             Spacer(modifier = Modifier.height(24.dp))
             HealthProgressCard(progress, activeHabits.count { it.isCompleted }, activeHabits.size)
@@ -96,6 +107,38 @@ fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
             shape = RoundedCornerShape(16.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(32.dp))
+        }
+    }
+}
+
+@Composable
+fun StreakBanner(message: String, motivation: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = EnergyLime,
+        border = BorderStroke(1.dp, Color.Black.copy(alpha = 0.1f))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "🔥", fontSize = 28.sp)
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Black,
+                    color = Color.Black
+                )
+                Text(
+                    text = motivation,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }

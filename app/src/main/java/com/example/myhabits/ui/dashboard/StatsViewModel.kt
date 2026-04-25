@@ -12,7 +12,9 @@ data class StatsState(
     val bestStreak: Int = 0,
     val totalCompletions: Int = 0,
     val weeklyData: List<Float> = List(7) { 0f },
-    val topCategory: String = "Ninguna"
+    val topCategory: String = "Ninguna",
+    val streakMessage: String = "",
+    val motivationMessage: String = ""
 )
 
 class StatsViewModel(dashboardViewModel: DashboardViewModel) : ViewModel() {
@@ -71,13 +73,26 @@ class StatsViewModel(dashboardViewModel: DashboardViewModel) : ViewModel() {
             .mapValues { entry -> entry.value.sumOf { it.completions.size } }
             .maxByOrNull { it.value }?.key ?: "Ninguna"
 
+        val streakMessage = when {
+            currentStreak > 0 -> "¡Llevas $currentStreak días seguidos de disciplina! 🔥"
+            else -> "¡Comienza tu racha hoy mismo! ⚡"
+        }
+
+        val motivationMessage = if (currentStreak >= bestStreak && bestStreak > 0) {
+            "¡Estás en tu mejor racha histórica! 🏆"
+        } else {
+            "¡No rompas tu racha! Mantente enfocado. 💪"
+        }
+
         return StatsState(
             weeklyCompletionRate = weeklyRate,
             currentStreak = currentStreak,
             bestStreak = maxOf(bestStreak, currentStreak),
             totalCompletions = totalCompletions,
             weeklyData = weeklyData,
-            topCategory = topCategory
+            topCategory = topCategory,
+            streakMessage = streakMessage,
+            motivationMessage = motivationMessage
         )
     }
 
