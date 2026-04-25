@@ -5,12 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.example.myhabits.data.Habit
 import com.example.myhabits.data.SessionManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
+import java.time.LocalDate
 
 class DashboardViewModel : ViewModel() {
     private val _userName = MutableStateFlow("USUARIO")
@@ -31,7 +27,21 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    fun toggleHabit(habitId: Int) = updateHabitState(habitId) { it.copy(isCompleted = !it.isCompleted) }
+    fun toggleHabit(habitId: Int) {
+        val today = LocalDate.now()
+        updateHabitState(habitId) { habit ->
+            val isCurrentlyCompleted = habit.completions.contains(today)
+            val newCompletions = if (isCurrentlyCompleted) {
+                habit.completions.filter { it != today }
+            } else {
+                habit.completions + today
+            }
+            habit.copy(
+                isCompleted = !isCurrentlyCompleted,
+                completions = newCompletions
+            )
+        }
+    }
     
     fun toggleFavorite(habitId: Int) = updateHabitState(habitId) { it.copy(isFavorite = !it.isFavorite) }
     

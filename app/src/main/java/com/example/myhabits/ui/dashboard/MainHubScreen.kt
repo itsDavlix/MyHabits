@@ -18,10 +18,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.myhabits.ui.navigation.BottomBarScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun MainHubScreen() {
     val navController = rememberNavController()
+    val dashboardViewModel: DashboardViewModel = viewModel()
+    val statsViewModel: StatsViewModel = remember(dashboardViewModel) {
+        StatsViewModel(dashboardViewModel)
+    }
     
     Scaffold(
         bottomBar = {
@@ -34,10 +39,10 @@ fun MainHubScreen() {
                 startDestination = BottomBarScreen.Home.route
             ) {
                 composable(BottomBarScreen.Home.route) {
-                    DashboardScreen()
+                    DashboardScreen(dashboardViewModel)
                 }
                 composable(BottomBarScreen.Stats.route) {
-                    PlaceholderScreen("Estadísticas de Salud")
+                    StatsScreen(statsViewModel)
                 }
                 composable(BottomBarScreen.Profile.route) {
                     ProfileScreen()
