@@ -5,15 +5,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,6 +35,7 @@ fun RegistrationScreen(
     viewModel: RegistrationViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     Box(
         modifier = Modifier
@@ -66,15 +72,29 @@ fun RegistrationScreen(
                 value = uiState.name,
                 onValueChange = { viewModel.onNameChange(it) },
                 label = { Text("NOMBRE COMPLETO", color = Color.White.copy(alpha = 0.4f)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else false
+                    },
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     focusedBorderColor = Color(0xFFD4FF00),
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f)
                 ),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
                 isError = uiState.nameError != null,
                 supportingText = { uiState.nameError?.let { Text(it, color = Color.Red) } },
                 leadingIcon = { Text("👤", modifier = Modifier.padding(start = 12.dp)) }
@@ -92,8 +112,15 @@ fun RegistrationScreen(
                         if (!focusState.isFocused) {
                             viewModel.validateEmailOnBlur()
                         }
+                    }
+                    .onPreviewKeyEvent {
+                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else false
                     },
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
@@ -102,7 +129,13 @@ fun RegistrationScreen(
                 ),
                 isError = uiState.emailError != null,
                 supportingText = { uiState.emailError?.let { Text(it, color = Color.Red) } },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
                 leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
             )
 
@@ -112,8 +145,16 @@ fun RegistrationScreen(
                 value = uiState.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
                 label = { Text("CONTRASEÑA", color = Color.White.copy(alpha = 0.4f)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                            viewModel.registerUser(onRegistrationSuccess)
+                            true
+                        } else false
+                    },
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
@@ -123,7 +164,13 @@ fun RegistrationScreen(
                 isError = uiState.passwordError != null,
                 supportingText = { uiState.passwordError?.let { Text(it, color = Color.Red) } },
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { viewModel.registerUser(onRegistrationSuccess) }
+                ),
                 leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 12.dp)) }
             )
 

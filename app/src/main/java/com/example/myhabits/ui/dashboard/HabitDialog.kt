@@ -9,13 +9,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -50,6 +56,15 @@ fun HabitDialog(
     var selectedDays by remember { 
         mutableStateOf(if (frequency.contains(",")) frequency.split(", ").toSet() else emptySet()) 
     }
+    
+    val focusManager = LocalFocusManager.current
+    
+    val onHabitConfirm = {
+        if (name.isNotBlank() && goal.isNotBlank() && category.isNotBlank()) {
+            val finalFreq = if (frequency == "Días específicos") selectedDays.joinToString(", ") else frequency
+            onConfirm(name, goal, category, selectedColor, selectedIcon, finalFreq, reminderTime)
+        }
+    }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
@@ -63,9 +78,45 @@ fun HabitDialog(
             ) {
                 Text(text = if (habit == null) "NUEVO HÁBITO" else "EDITAR HÁBITO", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = Color.White)
 
-                HabitTextField("Nombre del hábito", name) { name = it }
-                HabitTextField("Categoría", category) { category = it }
-                HabitTextField("Meta (ej: 2L, 30 min)", goal) { goal = it }
+                HabitTextField(
+                    label = "Nombre del hábito",
+                    value = name,
+                    onValueChange = { name = it },
+                    modifier = Modifier.onPreviewKeyEvent {
+                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else false
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                )
+                HabitTextField(
+                    label = "Categoría",
+                    value = category,
+                    onValueChange = { category = it },
+                    modifier = Modifier.onPreviewKeyEvent {
+                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else false
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                )
+                HabitTextField(
+                    label = "Meta (ej: 2L, 30 min)",
+                    value = goal,
+                    onValueChange = { goal = it },
+                    modifier = Modifier.onPreviewKeyEvent {
+                        if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                            onHabitConfirm()
+                            true
+                        } else false
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { onHabitConfirm() })
+                )
 
                 SectionHeader("FRECUENCIA")
                 FrequencySelector(frequency) { 
@@ -108,12 +159,7 @@ fun HabitDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = {
-                        if (name.isNotBlank() && goal.isNotBlank() && category.isNotBlank()) {
-                            val finalFreq = if (frequency == "Días específicos") selectedDays.joinToString(", ") else frequency
-                            onConfirm(name, goal, category, selectedColor, selectedIcon, finalFreq, reminderTime)
-                        }
-                    },
+                    onClick = onHabitConfirm,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = EnergyLime, contentColor = Color.Black),
                     shape = RoundedCornerShape(16.dp),
@@ -148,12 +194,22 @@ fun TimePickerDialog(
 }
 
 @Composable
-private fun HabitTextField(label: String, value: String, onValueChange: (String) -> Unit) {
+private fun HabitTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
+        singleLine = true,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = EnergyLime,
             unfocusedBorderColor = Color.White.copy(alpha = 0.2f),

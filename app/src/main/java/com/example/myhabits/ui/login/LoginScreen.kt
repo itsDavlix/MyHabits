@@ -3,13 +3,18 @@ package com.example.myhabits.ui.login
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -25,6 +30,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     Box(
         modifier = Modifier
@@ -59,8 +65,21 @@ fun LoginScreen(
                 value = uiState.email,
                 onValueChange = { viewModel.onEmailChange(it) },
                 label = { Text("CORREO ELECTRÓNICO", color = Color.White.copy(alpha = 0.4f)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent { 
+                        if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            true
+                        } else {
+                            false
+                        }
+                    },
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
@@ -69,7 +88,13 @@ fun LoginScreen(
                     errorBorderColor = Color.Red
                 ),
                 isError = uiState.error != null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
                 leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
             )
 
@@ -79,8 +104,18 @@ fun LoginScreen(
                 value = uiState.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
                 label = { Text("CONTRASEÑA", color = Color.White.copy(alpha = 0.4f)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onPreviewKeyEvent {
+                        if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                            viewModel.login(onLoginSuccess)
+                            true
+                        } else {
+                            false
+                        }
+                    },
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
@@ -90,7 +125,13 @@ fun LoginScreen(
                 ),
                 isError = uiState.error != null,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { viewModel.login(onLoginSuccess) }
+                ),
                 leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 12.dp)) }
             )
 
