@@ -43,7 +43,7 @@ fun DashboardScreen(
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
     val activeHabits = habits.filter { !it.isPaused }
     val progress = remember(activeHabits) {
-        if (activeHabits.isEmpty()) 0f else activeHabits.count { it.isCompleted }.toFloat() / activeHabits.size
+        if (activeHabits.isEmpty()) 0f else activeHabits.count { it.isCompletedToday }.toFloat() / activeHabits.size
     }
 
     var habitToEdit by remember { mutableStateOf<Habit?>(null) }
@@ -83,9 +83,9 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            WeeklyStatsSection()
+            WeeklyStatsSection(statsState.weeklyData)
             Spacer(modifier = Modifier.height(24.dp))
-            HealthProgressCard(progress, activeHabits.count { it.isCompleted }, activeHabits.size)
+            HealthProgressCard(progress, activeHabits.count { it.isCompletedToday }, activeHabits.size)
             Spacer(modifier = Modifier.height(32.dp))
             
             SectionTitle("HÁBITOS DEL DÍA")
@@ -193,18 +193,18 @@ fun HeaderSection(userName: String) {
 }
 
 @Composable
-fun WeeklyStatsSection() {
+fun WeeklyStatsSection(weeklyData: List<Float>) {
     val days = listOf("LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM")
-    val stats = listOf(0.7f, 0.9f, 0.4f, 0.0f, 0.0f, 0.0f, 0.0f)
 
     Column {
         Text(text = "ACTIVIDAD SEMANAL", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.4f))
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             days.forEachIndexed { index, day ->
+                val progressValue = weeklyData.getOrElse(index) { 0f }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(modifier = Modifier.width(32.dp).height(70.dp).clip(RoundedCornerShape(4.dp)).background(DarkSurface)) {
-                        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(stats[index]).align(Alignment.BottomCenter).background(if (stats[index] >= 0.8f) EnergyLime else HealthBlue))
+                        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(progressValue.coerceIn(0f, 1f)).align(Alignment.BottomCenter).background(if (progressValue >= 0.8f) EnergyLime else HealthBlue))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = day, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.6f))
@@ -243,7 +243,7 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDe
     var showMenu by remember { mutableStateOf(false) }
     val bgByState by animateColorAsState(targetValue = when {
         habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
-        habit.isCompleted -> EnergyLime.copy(alpha = 0.12f)
+        habit.isCompletedToday -> EnergyLime.copy(alpha = 0.12f)
         else -> DarkSurface
     }, label = "bg")
 
@@ -254,7 +254,7 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDe
         color = bgByState,
         border = BorderStroke(1.dp, when {
             habit.isPaused -> Color.White.copy(alpha = 0.05f)
-            habit.isCompleted -> EnergyLime.copy(alpha = 0.6f)
+            habit.isCompletedToday -> EnergyLime.copy(alpha = 0.6f)
             else -> Color.White.copy(alpha = 0.08f)
         })
     ) {
@@ -264,7 +264,7 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDe
             HabitInfo(habit, Modifier.weight(1f))
             HabitActions(habit, showMenu, { showMenu = it }, onEdit, onFavorite, onPause, onDelete)
             Spacer(modifier = Modifier.width(8.dp))
-            HabitCheckbox(habit.isCompleted)
+            HabitCheckbox(habit.isCompletedToday)
         }
     }
 }
@@ -273,7 +273,7 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDe
 private fun HabitIcon(habit: Habit) {
     Box(
         modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp))
-            .background(if (habit.isCompleted) EnergyLime.copy(alpha = 0.2f) else habit.categoryColor.copy(alpha = 0.1f)),
+            .background(if (habit.isCompletedToday) EnergyLime.copy(alpha = 0.2f) else habit.categoryColor.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
         Text(text = habit.icon, fontSize = 22.sp)
@@ -289,8 +289,8 @@ private fun HabitInfo(habit: Habit, modifier: Modifier) {
                 text = habit.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (habit.isCompleted) EnergyLime else Color.White,
-                textDecoration = if (habit.isCompleted) TextDecoration.LineThrough else null
+                color = if (habit.isCompletedToday) EnergyLime else Color.White,
+                textDecoration = if (habit.isCompletedToday) TextDecoration.LineThrough else null
             )
             if (habit.isFavorite) {
                 Icon(Icons.Default.Favorite, null, tint = EnergyLime, modifier = Modifier.padding(start = 8.dp).size(16.dp))

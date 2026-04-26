@@ -17,13 +17,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.myhabits.data.HabitRepository
+import androidx.lifecycle.ViewModelProvider
 import com.example.myhabits.ui.navigation.BottomBarScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun MainHubScreen() {
     val navController = rememberNavController()
-    val dashboardViewModel: DashboardViewModel = viewModel()
+    val repository = remember { HabitRepository() }
+    val dashboardViewModel: DashboardViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>, extras: androidx.lifecycle.viewmodel.CreationExtras): T {
+                val application = extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                return DashboardViewModel(application, repository) as T
+            }
+        }
+    )
     val statsViewModel: StatsViewModel = remember(dashboardViewModel) {
         StatsViewModel(dashboardViewModel)
     }

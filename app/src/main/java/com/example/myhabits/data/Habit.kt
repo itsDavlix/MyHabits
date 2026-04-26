@@ -10,11 +10,13 @@ data class Habit(
     val goal: String,
     val category: String,
     val categoryColor: Color,
-    val isCompleted: Boolean = false,
     val icon: String = "✨",
     val frequency: String = "Diaria",
     val isFavorite: Boolean = false,
     val isPaused: Boolean = false,
     val completions: List<LocalDate> = emptyList(),
     val reminderTime: LocalTime? = null
-)
+) {
+    val isCompletedToday: Boolean
+        get() = completions.contains(LocalDate.now())
+}

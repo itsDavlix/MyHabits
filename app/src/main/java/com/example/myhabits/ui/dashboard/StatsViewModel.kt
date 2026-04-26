@@ -49,15 +49,12 @@ class StatsViewModel(dashboardViewModel: DashboardViewModel) : ViewModel() {
         val completionDates = allCompletions.distinct().sortedDescending()
         var currentStreak = 0
         if (completionDates.isNotEmpty()) {
-            var checkDate: LocalDate? = if (completionDates.first() == today || completionDates.first() == today.minusDays(1)) {
-                completionDates.first()
-            } else null
-            
-            if (checkDate != null) {
+            val mostRecent = completionDates.first()
+            if (mostRecent == today || mostRecent == today.minusDays(1)) {
                 currentStreak = 1
+                var checkDate = mostRecent
                 for (i in 1 until completionDates.size) {
-                    val prevDate = checkDate?.minusDays(1)
-                    if (completionDates[i] == prevDate) {
+                    if (completionDates[i] == checkDate.minusDays(1)) {
                         currentStreak++
                         checkDate = completionDates[i]
                     } else break
