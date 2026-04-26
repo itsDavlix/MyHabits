@@ -1,6 +1,7 @@
 package com.example.myhabits.ui.login
 
 import androidx.lifecycle.ViewModel
+import com.example.myhabits.data.SessionManager
 import com.example.myhabits.data.User
 import com.example.myhabits.data.UserDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +72,7 @@ class RegistrationViewModel : ViewModel() {
         if (!hasError) {
             val newUser = User(state.name, state.email, state.password)
             UserDatabase.addUser(newUser)
+            SessionManager.setCurrentUser(newUser)
             onSuccess()
         }
     }
