@@ -49,6 +49,7 @@ fun DashboardScreen(
     val allHabits by viewModel.habits.collectAsState()
     val userName by viewModel.userName.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
+    val currentFilter by viewModel.currentFilter.collectAsState()
     val statsState = statsViewModel?.uiState?.collectAsState()?.value ?: StatsState()
     
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
@@ -128,16 +129,14 @@ fun DashboardScreen(
             HealthProgressCard(progress, activeHabitsOnSelectedDate.count { it.isCompletedOn(selectedDate) }, activeHabitsOnSelectedDate.size, selectedDate)
             Spacer(modifier = Modifier.height(32.dp))
             
-            val sectionTitle = when (selectedDate) {
-                LocalDate.now() -> "HÁBITOS DE HOY"
-                LocalDate.now().minusDays(1) -> "HÁBITOS DE AYER"
-                LocalDate.now().plusDays(1) -> "HÁBITOS DE MAÑANA"
-                else -> {
-                    val locale = Locale("es", "ES")
-                    "HÁBITOS DEL ${selectedDate.dayOfWeek.getDisplayName(TextStyle.FULL, locale).uppercase()}"
-                }
-            }
-            SectionTitle(sectionTitle)
+            SectionTitle("HÁBITOS DEL DÍA")
+
+            FilterChipsSection(
+                currentFilter = currentFilter,
+                onFilterSelected = { viewModel.setFilter(it) }
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
             
             if (sortedHabits.isEmpty()) {
                 EmptyHabitsState()
@@ -199,6 +198,41 @@ fun DashboardScreen(
         DayCompleteOverlay(
             isVisible = showDayComplete
         )
+    }
+}
+
+@Composable
+fun FilterChipsSection(currentFilter: HabitFilter, onFilterSelected: (HabitFilter) -> Unit) {
+    val filters = listOf(
+        "Todos" to HabitFilter.ALL,
+        "Favoritos" to HabitFilter.FAVORITES,
+        "Pendientes" to HabitFilter.PENDING,
+        "Completados" to HabitFilter.COMPLETED
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        filters.forEach { (label, filter) ->
+            val isSelected = currentFilter == filter
+            Surface(
+                onClick = { onFilterSelected(filter) },
+                shape = RoundedCornerShape(12.dp),
+                color = if (isSelected) EnergyLime else DarkSurface,
+                border = BorderStroke(1.dp, if (isSelected) EnergyLime else Color.White.copy(alpha = 0.1f)),
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(modifier = Modifier.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = label,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) Color.Black else Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
     }
 }
 

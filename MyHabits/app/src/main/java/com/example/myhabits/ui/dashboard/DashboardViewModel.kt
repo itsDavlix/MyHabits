@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalTime
 
+enum class HabitFilter {
+    ALL, FAVORITES, PENDING, COMPLETED
+}
+
 class DashboardViewModel(
     application: Application,
     private val repository: HabitRepository = HabitRepository()
@@ -22,10 +26,24 @@ class DashboardViewModel(
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
 
+    private val _currentFilter = MutableStateFlow(HabitFilter.ALL)
+    val currentFilter: StateFlow<HabitFilter> = _currentFilter.asStateFlow()
+
     val habits: StateFlow<List<Habit>> = repository.habits
 
-    val habitsForSelectedDate: StateFlow<List<Habit>> = combine(habits, _selectedDate) { habitsList, date ->
-        habitsList.filter { it.isActiveOn(date) || it.isCompletedOn(date) }
+    val habitsForSelectedDate: StateFlow<List<Habit>> = combine(habits, _selectedDate, _currentFilter) { habitsList, date, filter ->
+        habitsList.filter { habit ->
+            val isActive = habit.isActiveOn(date) || habit.isCompletedOn(date)
+            if (!isActive) return@filter false
+            
+            when (filter) {
+                // En la vista "Todos", ahora solo mostramos los NO completados (pendientes)
+                HabitFilter.ALL -> !habit.isCompletedOn(date)
+                HabitFilter.FAVORITES -> habit.isFavorite
+                HabitFilter.PENDING -> !habit.isCompletedOn(date)
+                HabitFilter.COMPLETED -> habit.isCompletedOn(date)
+            }
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -42,6 +60,10 @@ class DashboardViewModel(
     
     fun setSelectedDate(date: LocalDate) {
         _selectedDate.value = date
+    }
+
+    fun setFilter(filter: HabitFilter) {
+        _currentFilter.value = filter
     }
     
     fun toggleFavorite(habitId: Int) {
