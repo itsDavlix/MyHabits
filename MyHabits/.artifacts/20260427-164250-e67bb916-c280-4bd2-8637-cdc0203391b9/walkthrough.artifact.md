@@ -19,9 +19,13 @@ Se corrigió un error donde los hábitos pausados desaparecían de la pantalla p
     - [DashboardScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/DashboardScreen.kt): Se actualizó el filtro de la barra de progreso.
 
 ## 3. Mejora de la Pantalla de Perfil
-Se ha transformado el perfil en un panel de logros motivacional.
+Se ha transformado el perfil en un panel de logros motivacional con un sistema de gamificación simple.
 
-- **Nivel de Disciplina**: Se asigna un rango basado en el total de hábitos completados (Novato, Constante, Guerrero, Pro, Maestro).
+- **Sistema de Niveles**: Basado en el total de hábitos completados:
+    - **0-5**: Principiante 🌱
+    - **6-15**: Constante ⚡
+    - **16-30**: Disciplinado 💪
+    - **31+**: Elite 🏆
 - **Tarjetas de Estadísticas Rápidas**:
     - **Racha Actual 🔥**: Días seguidos cumpliendo objetivos.
     - **Hábitos Totales 📝**: Cantidad de hábitos creados.

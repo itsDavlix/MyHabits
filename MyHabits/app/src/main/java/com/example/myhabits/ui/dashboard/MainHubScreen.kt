@@ -79,11 +79,10 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
     var password by remember(currentUser) { mutableStateOf(currentUser?.password ?: "") }
 
     val userLevel = when {
-        stats.totalCompletions > 100 -> "MAESTRO"
-        stats.totalCompletions > 50 -> "PRO"
-        stats.totalCompletions > 20 -> "GUERRERO"
-        stats.totalCompletions > 5 -> "CONSTANTE"
-        else -> "NOVATO"
+        stats.totalCompletions > 30 -> "ELITE 🏆"
+        stats.totalCompletions > 15 -> "DISCIPLINADO 💪"
+        stats.totalCompletions > 5 -> "CONSTANTE ⚡"
+        else -> "PRINCIPIANTE 🌱"
     }
 
     Column(
