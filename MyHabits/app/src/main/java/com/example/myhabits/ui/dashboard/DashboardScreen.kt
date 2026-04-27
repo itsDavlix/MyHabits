@@ -53,13 +53,14 @@ fun DashboardScreen(
     val statsState = statsViewModel?.uiState?.collectAsState()?.value ?: StatsState()
     
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
-    val activeHabitsOnSelectedDate = allHabits.filter { it.isActiveOn(selectedDate) || it.isCompletedOn(selectedDate) }
+    val activeHabitsOnSelectedDate = allHabits.filter { (it.isActiveOn(selectedDate) && !it.isPaused) || it.isCompletedOn(selectedDate) }
     val progress = remember(activeHabitsOnSelectedDate, selectedDate) {
         if (activeHabitsOnSelectedDate.isEmpty()) 0f 
         else activeHabitsOnSelectedDate.count { it.isCompletedOn(selectedDate) }.toFloat() / activeHabitsOnSelectedDate.size
     }
 
     var habitToEdit by remember { mutableStateOf<Habit?>(null) }
+    var habitToDelete by remember { mutableStateOf<Habit?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     
     // Estados para el overlay motivacional
@@ -169,7 +170,7 @@ fun DashboardScreen(
                                 }
                             },
                             onEdit = { habitToEdit = habit; showDialog = true },
-                            onDelete = { viewModel.deleteHabit(habit.id) },
+                            onDelete = { habitToDelete = habit },
                             onFavorite = { viewModel.toggleFavorite(habit.id) },
                             onPause = { viewModel.togglePaused(habit.id) }
                         )
@@ -186,6 +187,36 @@ fun DashboardScreen(
             shape = RoundedCornerShape(16.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(32.dp))
+        }
+
+        if (habitToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { habitToDelete = null },
+                title = {
+                    Text(
+                        text = "¿Eliminar este hábito?",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            habitToDelete?.let { viewModel.deleteHabit(it.id) }
+                            habitToDelete = null
+                        }
+                    ) {
+                        Text("Eliminar", color = Color.Red, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { habitToDelete = null }) {
+                        Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                    }
+                },
+                containerColor = DarkSurface,
+                shape = RoundedCornerShape(24.dp)
+            )
         }
 
         // Overlay Motivacional

@@ -23,7 +23,6 @@ data class Habit(
         get() = isCompletedOn(LocalDate.now())
 
     fun isActiveOn(date: LocalDate): Boolean {
-        if (isPaused) return false
         return when (frequency) {
             "Diaria" -> true
             "Semanal" -> {
