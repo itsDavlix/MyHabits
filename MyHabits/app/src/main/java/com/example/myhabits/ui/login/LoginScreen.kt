@@ -35,6 +35,9 @@ import com.example.myhabits.ui.theme.DeepBlack
 import com.example.myhabits.ui.theme.EnergyLime
 import com.example.myhabits.ui.theme.MyHabitsTheme
 
+import androidx.compose.ui.res.painterResource
+import com.example.myhabits.R
+import androidx.compose.foundation.Image
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.Brush
 import com.example.myhabits.ui.theme.*
@@ -78,20 +81,14 @@ fun LoginScreen(
                     .padding(vertical = 48.dp, horizontal = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo placeholder stylized
-                Box(
+                // Logo Image
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo",
                     modifier = Modifier
-                        .size(100.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(BrandBlue, BrandGreen)
-                            ),
-                            shape = RoundedCornerShape(24.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🌿", fontSize = 50.sp)
-                }
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
