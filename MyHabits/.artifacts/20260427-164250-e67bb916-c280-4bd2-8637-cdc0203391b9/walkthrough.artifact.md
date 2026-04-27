@@ -34,6 +34,17 @@ Se ha transformado el perfil en un panel de logros motivacional con un sistema d
 - **Interfaz Renovada**: Diseño más limpio con tarjetas separadas, iconos y un encabezado de perfil con borde de color EnergyLime.
 - **Ubicación**: [MainHubScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/MainHubScreen.kt)
 
+## 4. Mejora Estética del Login
+Se ha rediseñado la pantalla de inicio de sesión para que sea más impactante y profesional.
+
+- **Diseño de Tarjeta Central**: El formulario ahora reside dentro de una tarjeta gris oscuro con bordes muy redondeados, destacando sobre el fondo negro puro.
+- **Efecto Neón**: Se añadió una sombra y un borde sutil en color verde neón (`EnergyLime`) a la tarjeta principal.
+- **Identidad Visual**:
+    - **Logo**: Se añadió un círculo neón con el emoji ⚡ sobre la tarjeta.
+    - **Eslogan**: El texto cambió a "Construye disciplina diaria", reforzando el propósito de la app.
+- **Campos de Texto**: Se suavizaron los bordes de los inputs para mayor coherencia visual.
+- **Ubicación**: [LoginScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/login/LoginScreen.kt)
+
 ## Verificación
 - Se verificó que el diálogo de confirmación aparece correctamente al seleccionar "Eliminar" desde el menú.
 - Se comprobó mediante análisis de código que los hábitos pausados ahora pasan el filtro de visualización en `DashboardViewModel`.
