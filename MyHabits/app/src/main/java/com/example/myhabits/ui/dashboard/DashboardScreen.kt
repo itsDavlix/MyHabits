@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -206,7 +208,7 @@ fun DashboardScreen(
                             habitToDelete = null
                         }
                     ) {
-                        Text("Eliminar", color = Color.Red, fontWeight = FontWeight.Bold)
+                        Text("Eliminar", color = SoftRed, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
@@ -594,7 +596,19 @@ fun HealthProgressCard(progress: Float, completed: Int, total: Int, selectedDate
         LocalDate.now() -> "HOY"
         else -> selectedDate.format(DateTimeFormatter.ofPattern("dd MMM"))
     }
-    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), color = DarkSurface, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))) {
+    
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = DarkSurface,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+    ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
@@ -605,7 +619,7 @@ fun HealthProgressCard(progress: Float, completed: Int, total: Int, selectedDate
             }
             Spacer(modifier = Modifier.height(20.dp))
             LinearProgressIndicator(
-                progress = { progress },
+                progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth().height(12.dp).clip(CircleShape),
                 color = EnergyLime,
                 trackColor = Color.Black,
@@ -621,22 +635,56 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
     var showMenu by remember { mutableStateOf(false) }
     val isCompletedOnDate = habit.isCompletedOn(selectedDate)
     
-    val bgByState by animateColorAsState(targetValue = when {
-        habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
-        isCompletedOnDate -> EnergyLime.copy(alpha = 0.12f)
-        else -> DarkSurface
-    }, label = "bg")
-
-    Surface(
-        onClick = { if (!habit.isPaused) onToggle() },
-        modifier = Modifier.fillMaxWidth().alpha(if (habit.isPaused) 0.5f else 1f),
-        shape = RoundedCornerShape(16.dp),
-        color = bgByState,
-        border = BorderStroke(1.dp, when {
+    val bgByState by animateColorAsState(
+        targetValue = when {
+            habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
+            isCompletedOnDate -> EnergyLime.copy(alpha = 0.12f)
+            else -> DarkSurface
+        },
+        animationSpec = tween(durationMillis = 400),
+        label = "bg"
+    )
+    
+    val borderByState by animateColorAsState(
+        targetValue = when {
             habit.isPaused -> Color.White.copy(alpha = 0.05f)
             isCompletedOnDate -> EnergyLime.copy(alpha = 0.6f)
             else -> Color.White.copy(alpha = 0.08f)
-        })
+        },
+        animationSpec = tween(durationMillis = 400),
+        label = "border"
+    )
+
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "scale"
+    )
+
+    Surface(
+        onClick = { if (!habit.isPaused) onToggle() },
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .alpha(if (habit.isPaused) 0.5f else 1f)
+            .pointerInput(habit.isPaused) {
+                if (!habit.isPaused) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            when (event.type) {
+                                PointerEventType.Press -> isPressed = true
+                                PointerEventType.Release -> isPressed = false
+                                PointerEventType.Exit -> isPressed = false
+                            }
+                        }
+                    }
+                }
+            },
+        shape = RoundedCornerShape(16.dp),
+        color = bgByState,
+        border = BorderStroke(1.dp, borderByState)
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             HabitIcon(habit, isCompletedOnDate)
@@ -710,7 +758,7 @@ private fun HabitActions(habit: Habit, expanded: Boolean, onExpand: (Boolean) ->
                 leadingIcon = { Icon(if (habit.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause, null, tint = HealthBlue) }
             )
             HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-            DropdownMenuItem(text = { Text("Eliminar", color = Color.Red) }, onClick = { onExpand(false); onDelete() })
+            DropdownMenuItem(text = { Text("Eliminar", color = SoftRed) }, onClick = { onExpand(false); onDelete() })
         }
     }
 }

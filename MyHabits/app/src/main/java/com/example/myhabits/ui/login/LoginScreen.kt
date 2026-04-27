@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myhabits.ui.theme.DarkSurface
+import com.example.myhabits.ui.theme.DeepBlack
 import com.example.myhabits.ui.theme.EnergyLime
 import com.example.myhabits.ui.theme.MyHabitsTheme
 
@@ -47,7 +48,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A)),
+            .background(DeepBlack),
         contentAlignment = Alignment.Center
     ) {
         Surface(

@@ -11,6 +11,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val DeepBlack = Color(0xFF0A0A0A)
-val DarkSurface = Color(0xFF1E1E1E)
+val DarkSurface = Color(0xFF1A1A1A)
 val EnergyLime = Color(0xFFD4FF00)
 val HealthBlue = Color(0xFF00D2FF)
+val SoftRed = Color(0xFFFF5252)

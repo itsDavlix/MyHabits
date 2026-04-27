@@ -53,6 +53,32 @@ Se ha extendido el lenguaje visual "Pro/Neon" a todas las pantallas clave para u
 - **Elementos UI**: Todos los campos de texto, botones y tarjetas ahora comparten un radio de curvatura de `16.dp` a `28.dp`, creando una interfaz suave pero moderna.
 - **Ubicación**: [RegistrationScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/login/RegistrationScreen.kt)
 
+## 6. Identidad Visual Unificada
+Se ha consolidado la paleta de colores de la aplicación para crear una marca coherente y profesional.
+
+- **Fondo**: Negro profundo (`DeepBlack` - `#0A0A0A`) en todas las pantallas.
+- **Tarjetas y Superficies**: Gris oscuro (`DarkSurface` - `#1A1A1A`) para un contraste suave y moderno.
+- **Color Principal**: Verde Neón (`EnergyLime`) para acciones primarias, éxitos y progreso.
+- **Color Secundario**: Azul (`HealthBlue`) para información complementaria y estadísticas.
+- **Alertas y Borrado**: Rojo Suave (`SoftRed`) para errores, confirmaciones de eliminación y acciones críticas, eliminando el rojo puro estridente.
+- **Tema del Sistema**: Se forzó el tema oscuro y se deshabilitaron los colores dinámicos de Android 12+ para asegurar que la identidad visual "Pro" se mantenga intacta en todos los dispositivos.
+- **Ubicación**: [Color.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/theme/Color.kt) y [Theme.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/theme/Theme.kt)
+
+## 7. Animaciones Sutiles
+Se añadieron micro-interacciones para mejorar la respuesta táctil y la fluidez visual.
+
+- **Progreso Animado**: La barra de progreso de salud ahora se llena suavemente con una animación de 800ms, haciendo que el avance sea más gratificante.
+- **Transiciones de Color**: Al completar un hábito, el color de fondo y el borde cambian gradualmente mediante una transición suave de 400ms.
+- **Feedback Táctil (Escalado)**: Los hábitos y los botones principales ahora se encogen ligeramente (escala a 0.96) al ser presionados, simulando una sensación física de clic.
+- **Ubicación**: [DashboardScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/DashboardScreen.kt) y [MainHubScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/MainHubScreen.kt)
+
+## 8. Estado Vacío en Estadísticas
+Se mejoró la experiencia de usuario cuando aún no hay datos de progreso.
+
+- **Diseño del Empty State**: En lugar de mostrar gráficos vacíos, ahora aparece un mensaje central: "COMPLETA HÁBITOS PARA VER TUS ESTADÍSTICAS" acompañado del icono 📊.
+- **Claridad**: Esto evita que la pantalla parezca incompleta o con errores al iniciar la app por primera vez.
+- **Ubicación**: [StatsScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/StatsScreen.kt)
+
 ## Verificación
 - Se verificó que el diálogo de confirmación aparece correctamente al seleccionar "Eliminar" desde el menú.
 - Se comprobó mediante análisis de código que los hábitos pausados ahora pasan el filtro de visualización en `DashboardViewModel`.

@@ -1,17 +1,24 @@
 package com.example.myhabits.ui.dashboard
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +32,7 @@ import com.example.myhabits.data.HabitRepository
 import androidx.lifecycle.ViewModelProvider
 import com.example.myhabits.ui.navigation.BottomBarScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myhabits.ui.theme.*
 
 @Composable
 fun MainHubScreen() {
@@ -88,7 +96,7 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(com.example.myhabits.ui.theme.DeepBlack)
+            .background(DeepBlack)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -101,15 +109,15 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 Surface(
                     modifier = Modifier.size(100.dp),
                     shape = RoundedCornerShape(30.dp),
-                    color = com.example.myhabits.ui.theme.DarkSurface,
-                    border = androidx.compose.foundation.BorderStroke(2.dp, com.example.myhabits.ui.theme.EnergyLime)
+                    color = DarkSurface,
+                    border = androidx.compose.foundation.BorderStroke(2.dp, EnergyLime)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(text = "👤", fontSize = 50.sp)
                     }
                 }
                 Surface(
-                    color = com.example.myhabits.ui.theme.EnergyLime,
+                    color = EnergyLime,
                     shape = CircleShape,
                     modifier = Modifier.size(28.dp).offset(x = 4.dp, y = 4.dp)
                 ) {
@@ -129,14 +137,14 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
             )
             
             Surface(
-                color = com.example.myhabits.ui.theme.EnergyLime.copy(alpha = 0.1f),
+                color = EnergyLime.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(8.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, com.example.myhabits.ui.theme.EnergyLime.copy(alpha = 0.3f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, EnergyLime.copy(alpha = 0.3f)),
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 Text(
                     text = "NIVEL DISCIPLINA: $userLevel",
-                    color = com.example.myhabits.ui.theme.EnergyLime,
+                    color = EnergyLime,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -184,28 +192,72 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            var isEditPressed by remember { mutableStateOf(false) }
+            val editScale by animateFloatAsState(
+                targetValue = if (isEditPressed) 0.96f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                label = "editScale"
+            )
+
             Button(
                 onClick = { isEditing = true },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = com.example.myhabits.ui.theme.DarkSurface, contentColor = Color.White),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .scale(editScale)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                when (event.type) {
+                                    PointerEventType.Press -> isEditPressed = true
+                                    PointerEventType.Release -> isEditPressed = false
+                                    PointerEventType.Exit -> isEditPressed = false
+                                }
+                            }
+                        }
+                    },
+                colors = ButtonDefaults.buttonColors(containerColor = DarkSurface, contentColor = Color.White),
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
             ) {
-                Icon(androidx.compose.material.icons.Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("EDITAR PERFIL", fontWeight = FontWeight.Bold)
             }
             
             Spacer(modifier = Modifier.height(12.dp))
             
+            var isLogoutPressed by remember { mutableStateOf(false) }
+            val logoutScale by animateFloatAsState(
+                targetValue = if (isLogoutPressed) 0.96f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                label = "logoutScale"
+            )
+
             Button(
                 onClick = { 
                     com.example.myhabits.data.SessionManager.setCurrentUser(null)
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.1f), contentColor = Color.Red),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .scale(logoutScale)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                when (event.type) {
+                                    PointerEventType.Press -> isLogoutPressed = true
+                                    PointerEventType.Release -> isLogoutPressed = false
+                                    PointerEventType.Exit -> isLogoutPressed = false
+                                }
+                            }
+                        }
+                    },
+                colors = ButtonDefaults.buttonColors(containerColor = SoftRed.copy(alpha = 0.1f), contentColor = SoftRed),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f))
+                border = androidx.compose.foundation.BorderStroke(1.dp, SoftRed.copy(alpha = 0.2f))
             ) {
                 Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
             }
@@ -227,9 +279,9 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedBorderColor = EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedLabelColor = EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -241,9 +293,9 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedBorderColor = EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedLabelColor = EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -255,9 +307,9 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 label = { Text("Nueva Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedBorderColor = EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
+                    focusedLabelColor = EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -274,7 +326,7 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                     isEditing = false 
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = com.example.myhabits.ui.theme.EnergyLime, contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(containerColor = EnergyLime, contentColor = Color.Black),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold)
@@ -297,7 +349,7 @@ fun QuickStatCard(title: String, value: String, unit: String, icon: String, modi
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        color = com.example.myhabits.ui.theme.DarkSurface,
+        color = DarkSurface,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -343,7 +395,7 @@ fun BottomBar(navController: androidx.navigation.NavHostController) {
     val currentDestination = navBackStackEntry?.destination
 
     NavigationBar(
-        containerColor = Color(0xFF1A1A1A),
+        containerColor = DarkSurface,
         contentColor = Color.White
     ) {
         screens.forEach { screen ->
@@ -364,14 +416,14 @@ fun BottomBar(navController: androidx.navigation.NavHostController) {
                     Text(
                         text = screen.icon,
                         fontSize = 20.sp,
-                        color = if (selected) Color(0xFFD4FF00) else Color.White.copy(alpha = 0.5f)
+                        color = if (selected) EnergyLime else Color.White.copy(alpha = 0.5f)
                     )
                 },
                 label = {
                     Text(
                         text = screen.title,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selected) Color(0xFFD4FF00) else Color.White.copy(alpha = 0.5f)
+                        color = if (selected) EnergyLime else Color.White.copy(alpha = 0.5f)
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(

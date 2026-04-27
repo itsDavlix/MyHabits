@@ -411,7 +411,7 @@ private fun ReminderSelector(time: LocalTime?, onSet: () -> Unit, onClear: () ->
             }
             if (time != null) {
                 IconButton(onClick = { onClear() }, modifier = Modifier.size(24.dp)) {
-                    Text(text = "✕", color = Color.Red, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "✕", color = SoftRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

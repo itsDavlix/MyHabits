@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myhabits.ui.theme.DarkSurface
@@ -40,25 +41,45 @@ fun StatsScreen(viewModel: StatsViewModel) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        WeeklyActivityChart(state.weeklyData)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            item { StatCard("Racha Actual", "${state.currentStreak} 🔥", EnergyLime) }
-            item { StatCard("Mejor Racha", "${state.bestStreak} 🏆", HealthBlue) }
-            item { StatCard("Total Completados", "${state.totalCompletions}", Color.White) }
-            item { StatCard("Cumplimiento Semanal", "${(state.weeklyCompletionRate * 100).toInt()}%", EnergyLime) }
+        if (state.totalCompletions == 0) {
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "📊", fontSize = 64.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "COMPLETA HÁBITOS PARA VER TUS ESTADÍSTICAS",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.5f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
+                }
+            }
+        } else {
+            WeeklyActivityChart(state.weeklyData)
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                item { StatCard("Racha Actual", "${state.currentStreak} 🔥", EnergyLime) }
+                item { StatCard("Mejor Racha", "${state.bestStreak} 🏆", HealthBlue) }
+                item { StatCard("Total Completados", "${state.totalCompletions}", Color.White) }
+                item { StatCard("Cumplimiento Semanal", "${(state.weeklyCompletionRate * 100).toInt()}%", EnergyLime) }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            CategoryHighlightCard(state.topCategory)
         }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        CategoryHighlightCard(state.topCategory)
     }
 }
 
