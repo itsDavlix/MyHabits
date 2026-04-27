@@ -139,38 +139,42 @@ fun DashboardScreen(
             }
             SectionTitle(sectionTitle)
             
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(items = sortedHabits, key = { it.id }) { habit ->
-                    HealthHabitItem(
-                        habit = habit,
-                        selectedDate = selectedDate,
-                        onToggle = { 
-                            val wasCompleted = habit.isCompletedOn(selectedDate)
-                            viewModel.toggleHabit(habit.id) 
-                            
-                            if (!wasCompleted) {
-                                // Verificar si después de este toggle todo el día está completo
-                                val willBeAllCompleted = activeHabitsOnSelectedDate.all { 
-                                    if (it.id == habit.id) true else it.isCompletedOn(selectedDate) 
-                                }
+            if (sortedHabits.isEmpty()) {
+                EmptyHabitsState()
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(items = sortedHabits, key = { it.id }) { habit ->
+                        HealthHabitItem(
+                            habit = habit,
+                            selectedDate = selectedDate,
+                            onToggle = { 
+                                val wasCompleted = habit.isCompletedOn(selectedDate)
+                                viewModel.toggleHabit(habit.id) 
                                 
-                                if (willBeAllCompleted && activeHabitsOnSelectedDate.isNotEmpty()) {
-                                    showDayComplete = true
-                                } else {
-                                    motivationalMessage = motivationalPhrases.random()
-                                    showMotivation = true
+                                if (!wasCompleted) {
+                                    // Verificar si después de este toggle todo el día está completo
+                                    val willBeAllCompleted = activeHabitsOnSelectedDate.all { 
+                                        if (it.id == habit.id) true else it.isCompletedOn(selectedDate) 
+                                    }
+                                    
+                                    if (willBeAllCompleted && activeHabitsOnSelectedDate.isNotEmpty()) {
+                                        showDayComplete = true
+                                    } else {
+                                        motivationalMessage = motivationalPhrases.random()
+                                        showMotivation = true
+                                    }
                                 }
-                            }
-                        },
-                        onEdit = { habitToEdit = habit; showDialog = true },
-                        onDelete = { viewModel.deleteHabit(habit.id) },
-                        onFavorite = { viewModel.toggleFavorite(habit.id) },
-                        onPause = { viewModel.togglePaused(habit.id) }
-                    )
+                            },
+                            onEdit = { habitToEdit = habit; showDialog = true },
+                            onDelete = { viewModel.deleteHabit(habit.id) },
+                            onFavorite = { viewModel.toggleFavorite(habit.id) },
+                            onPause = { viewModel.togglePaused(habit.id) }
+                        )
+                    }
                 }
             }
         }
@@ -194,6 +198,46 @@ fun DashboardScreen(
         // Overlay de Día Completado
         DayCompleteOverlay(
             isVisible = showDayComplete
+        )
+    }
+}
+
+@Composable
+fun EmptyHabitsState() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.7f)
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(100.dp),
+            shape = CircleShape,
+            color = DarkSurface,
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(text = "📝", fontSize = 48.sp)
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Aún no tienes hábitos para este día.",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Crea tu primer hábito con el botón +",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White.copy(alpha = 0.5f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -227,12 +271,12 @@ fun DayCompleteOverlay(isVisible: Boolean) {
                         ),
                         shape = RoundedCornerShape(32.dp)
                     )
-                    .padding(horizontal = 48.dp, vertical = 40.dp)
+                    .padding(horizontal = 40.dp, vertical = 48.dp)
             ) {
                 Text(
                     text = "🌟",
                     fontSize = 48.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Text(
                     text = "DÍA COMPLETADO",
@@ -240,15 +284,17 @@ fun DayCompleteOverlay(isVisible: Boolean) {
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.Black,
                     textAlign = TextAlign.Center,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "¡ERES IMPARABLE!",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -343,7 +389,8 @@ fun MotivationalOverlay(isVisible: Boolean, message: String) {
                     color = EnergyLime,
                     textAlign = TextAlign.Center,
                     letterSpacing = 2.sp,
-                    lineHeight = 36.sp
+                    lineHeight = 36.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Box(
