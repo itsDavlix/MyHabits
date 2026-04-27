@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -37,10 +36,7 @@ import com.example.myhabits.ui.theme.*
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import java.util.Locale
 
 @Composable
 fun DashboardScreen(
@@ -70,13 +66,13 @@ fun DashboardScreen(
     var showDayComplete by remember { mutableStateOf(false) }
     var motivationalMessage by remember { mutableStateOf("") }
     val motivationalPhrases = listOf(
-        "¡Buen trabajo!",
-        "Otro paso más cerca de tu meta.",
-        "Disciplina completada.",
-        "Racha en progreso.",
-        "¡Estás imparable!",
-        "Compromiso demostrado.",
-        "Cada pequeño paso cuenta."
+        "¡Buen trabajo! 🌿",
+        "Otro paso hacia tu bienestar.",
+        "¡Disciplina de acero!",
+        "Racha imparable ⚡",
+        "¡Estás creciendo!",
+        "Compromiso real.",
+        "Cada paso cuenta."
     )
 
     LaunchedEffect(showMotivation) {
@@ -88,7 +84,7 @@ fun DashboardScreen(
 
     LaunchedEffect(showDayComplete) {
         if (showDayComplete) {
-            delay(3500) // Un poco más largo para que se vea el confeti
+            delay(3500)
             showDayComplete = false
         }
     }
@@ -117,7 +113,7 @@ fun DashboardScreen(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(DeepBlack)) {
+    Box(modifier = Modifier.fillMaxSize().background(BrandDark)) {
         Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
             HeaderSection(userName)
             Spacer(modifier = Modifier.height(24.dp))
@@ -158,7 +154,6 @@ fun DashboardScreen(
                                 viewModel.toggleHabit(habit.id) 
                                 
                                 if (!wasCompleted) {
-                                    // Verificar si después de este toggle todo el día está completo
                                     val willBeAllCompleted = activeHabitsOnSelectedDate.all { 
                                         if (it.id == habit.id) true else it.isCompletedOn(selectedDate) 
                                     }
@@ -184,8 +179,8 @@ fun DashboardScreen(
         FloatingActionButton(
             onClick = { habitToEdit = null; showDialog = true },
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
-            containerColor = EnergyLime,
-            contentColor = Color.Black,
+            containerColor = BrandGreen,
+            contentColor = BrandDark,
             shape = RoundedCornerShape(16.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(32.dp))
@@ -197,7 +192,7 @@ fun DashboardScreen(
                 title = {
                     Text(
                         text = "¿Eliminar este hábito?",
-                        color = Color.White,
+                        color = SoftWhite,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -213,21 +208,19 @@ fun DashboardScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { habitToDelete = null }) {
-                        Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                        Text("Cancelar", color = SoftWhite.copy(alpha = 0.6f))
                     }
                 },
-                containerColor = DarkSurface,
+                containerColor = CardGray,
                 shape = RoundedCornerShape(24.dp)
             )
         }
 
-        // Overlay Motivacional
         MotivationalOverlay(
             isVisible = showMotivation,
             message = motivationalMessage
         )
 
-        // Overlay de Día Completado
         DayCompleteOverlay(
             isVisible = showDayComplete
         )
@@ -252,8 +245,8 @@ fun FilterChipsSection(currentFilter: HabitFilter, onFilterSelected: (HabitFilte
             Surface(
                 onClick = { onFilterSelected(filter) },
                 shape = RoundedCornerShape(12.dp),
-                color = if (isSelected) EnergyLime else DarkSurface,
-                border = BorderStroke(1.dp, if (isSelected) EnergyLime else Color.White.copy(alpha = 0.1f)),
+                color = if (isSelected) BrandGreen else CardGray,
+                border = BorderStroke(1.dp, if (isSelected) BrandGreen else SoftWhite.copy(alpha = 0.1f)),
                 modifier = Modifier.weight(1f)
             ) {
                 Box(modifier = Modifier.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
@@ -261,7 +254,7 @@ fun FilterChipsSection(currentFilter: HabitFilter, onFilterSelected: (HabitFilte
                         text = label,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color.Black else Color.White.copy(alpha = 0.7f)
+                        color = if (isSelected) BrandDark else SoftWhite.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -279,30 +272,29 @@ fun EmptyHabitsState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Surface(
-            modifier = Modifier.size(100.dp),
-            shape = CircleShape,
-            color = DarkSurface,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(CardGray, CircleShape)
+                .border(1.dp, SoftWhite.copy(alpha = 0.1f), CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = "📝", fontSize = 48.sp)
-            }
+            Text(text = "🌿", fontSize = 56.sp)
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = "Aún no tienes hábitos para este día.",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
+            text = "TU CAMINO EMPIEZA AQUÍ",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Black,
+            color = SoftWhite,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Crea tu primer hábito con el botón +",
+            text = "Crea un hábito y cultiva tu progreso diario.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.5f),
+            color = SoftWhite.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -322,7 +314,7 @@ fun DayCompleteOverlay(isVisible: Boolean) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.85f))
+                .background(BrandDark.copy(alpha = 0.9f))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -334,7 +326,7 @@ fun DayCompleteOverlay(isVisible: Boolean) {
                 modifier = Modifier
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(EnergyLime, EnergyLime.copy(alpha = 0.8f))
+                            colors = listOf(BrandGreen, BrandDarkGreen)
                         ),
                         shape = RoundedCornerShape(32.dp)
                     )
@@ -349,17 +341,17 @@ fun DayCompleteOverlay(isVisible: Boolean) {
                     text = "DÍA COMPLETADO",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black,
+                    color = SoftWhite,
                     textAlign = TextAlign.Center,
                     letterSpacing = 1.sp,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "¡ERES IMPARABLE!",
+                    text = "¡TU DISCIPLINA ES TU PODER!",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black.copy(alpha = 0.6f),
+                    color = SoftWhite.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -428,7 +420,7 @@ fun MotivationalOverlay(isVisible: Boolean, message: String) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.85f)) // Fondo oscuro sólido para máximo contraste
+                .background(BrandDark.copy(alpha = 0.9f))
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -436,11 +428,11 @@ fun MotivationalOverlay(isVisible: Boolean, message: String) {
                 modifier = Modifier
                     .wrapContentSize()
                     .background(
-                        color = DarkSurface,
-                        shape = RoundedCornerShape(28.dp)
+                        color = CardGray,
+                        shape = RoundedCornerShape(32.dp)
                     )
-                    .border(2.dp, EnergyLime, RoundedCornerShape(28.dp))
-                    .padding(horizontal = 32.dp, vertical = 40.dp),
+                    .border(2.dp, BrandGreen, RoundedCornerShape(32.dp))
+                    .padding(horizontal = 40.dp, vertical = 48.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -451,21 +443,13 @@ fun MotivationalOverlay(isVisible: Boolean, message: String) {
                 )
                 Text(
                     text = message.uppercase(),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
-                    color = EnergyLime,
+                    color = BrandGreen,
                     textAlign = TextAlign.Center,
                     letterSpacing = 2.sp,
-                    lineHeight = 36.sp,
+                    lineHeight = 32.sp,
                     modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Box(
-                    modifier = Modifier
-                        .height(4.dp)
-                        .width(80.dp)
-                        .clip(CircleShape)
-                        .background(EnergyLime)
                 )
             }
         }
@@ -477,27 +461,32 @@ fun StreakBanner(message: String, motivation: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = EnergyLime,
-        border = BorderStroke(1.dp, Color.Black.copy(alpha = 0.1f))
+        color = BrandBlue.copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, BrandBlue.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "🔥", fontSize = 28.sp)
+            Box(
+                modifier = Modifier.size(40.dp).background(BrandBlue.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "🔥", fontSize = 24.sp)
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Black,
-                    color = Color.Black
+                    color = SoftWhite
                 )
                 Text(
                     text = motivation,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black.copy(alpha = 0.7f)
+                    color = BrandCyan
                 )
             }
         }
@@ -509,9 +498,9 @@ private fun SectionTitle(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.5.sp,
-        color = Color.White.copy(alpha = 0.5f),
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = 2.sp,
+        color = SoftWhite.copy(alpha = 0.4f),
         modifier = Modifier.padding(bottom = 16.dp)
     )
 }
@@ -522,7 +511,7 @@ fun HeaderSection(userName: String) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         when (hour) {
             in 5..12 -> "Buenos días" to "☀️"
-            in 13..20 -> "Buenas tardes" to "🌤️"
+            in 13..20 -> "Buenas tardes" to "🌿"
             else -> "Buenas noches" to "🌙"
         }
     }
@@ -535,23 +524,23 @@ fun HeaderSection(userName: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(text = "${greetingInfo.first} ${greetingInfo.second},", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EnergyLime)
-            Text(text = firstName, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
+            Text(text = "${greetingInfo.first} ${greetingInfo.second},", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = BrandGreen)
+            Text(text = firstName, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = SoftWhite)
         }
-        Surface(modifier = Modifier.size(52.dp), shape = RoundedCornerShape(14.dp), color = DarkSurface, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))) {
-            Box(contentAlignment = Alignment.Center) { Text(text = "🔔", fontSize = 24.sp) }
+        Surface(modifier = Modifier.size(52.dp), shape = RoundedCornerShape(16.dp), color = CardGray, border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f))) {
+            Box(contentAlignment = Alignment.Center) { Text(text = "🌱", fontSize = 24.sp) }
         }
     }
 }
 
 @Composable
 fun WeeklyStatsSection(weeklyData: List<Float>, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-    val days = listOf("LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM")
+    val days = listOf("L", "M", "M", "J", "V", "S", "D")
     val today = LocalDate.now()
     val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
 
     Column {
-        Text(text = "ACTIVIDAD SEMANAL", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.4f))
+        Text(text = "PROGRESO SEMANAL", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = SoftWhite.copy(alpha = 0.4f))
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             days.forEachIndexed { index, day ->
@@ -565,24 +554,24 @@ fun WeeklyStatsSection(weeklyData: List<Float>, selectedDate: LocalDate, onDateS
                 ) {
                     Box(
                         modifier = Modifier
-                            .width(32.dp)
-                            .height(70.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (isSelected) EnergyLime.copy(alpha = 0.2f) else DarkSurface)
+                            .width(36.dp)
+                            .height(64.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) BrandGreen.copy(alpha = 0.1f) else CardGray)
                             .border(
-                                if (isSelected) 1.dp else 0.dp, 
-                                if (isSelected) EnergyLime else Color.Transparent, 
-                                RoundedCornerShape(4.dp)
+                                1.dp, 
+                                if (isSelected) BrandGreen else SoftWhite.copy(alpha = 0.05f), 
+                                RoundedCornerShape(12.dp)
                             )
                     ) {
-                        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(progressValue.coerceIn(0f, 1f)).align(Alignment.BottomCenter).background(if (progressValue >= 0.8f) EnergyLime else HealthBlue))
+                        Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(progressValue.coerceIn(0.05f, 1f)).align(Alignment.BottomCenter).background(if (progressValue >= 0.8f) BrandGreen else BrandBlue))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = day, 
                         style = MaterialTheme.typography.labelSmall, 
-                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-                        color = if (isSelected) EnergyLime else Color.White.copy(alpha = 0.6f)
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
+                        color = if (isSelected) BrandGreen else SoftWhite.copy(alpha = 0.4f)
                     )
                 }
             }
@@ -605,27 +594,25 @@ fun HealthProgressCard(progress: Float, completed: Int, total: Int, selectedDate
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = DarkSurface,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        shape = RoundedCornerShape(24.dp),
+        color = CardGray,
+        border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.05f))
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text(text = "ESTADO ($dateText)", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EnergyLime)
-                    Text(text = "$completed de $total completados", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
+                    Text(text = "PROGRESO $dateText", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = BrandCyan)
+                    Text(text = "$completed de $total completados", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SoftWhite)
                 }
-                Text(text = "${(progress * 100).toInt()}%", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Black, color = Color.White)
+                Text(text = "${(progress * 100).toInt()}%", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Black, color = BrandGreen)
             }
             Spacer(modifier = Modifier.height(20.dp))
             LinearProgressIndicator(
                 progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth().height(12.dp).clip(CircleShape),
-                color = EnergyLime,
-                trackColor = Color.Black,
+                color = BrandGreen,
+                trackColor = BrandDark,
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = if (progress < 1f) "Cerca de tu meta" else "¡Objetivos completados!", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = if (progress >= 1f) EnergyLime else Color.White)
         }
     }
 }
@@ -637,9 +624,9 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
     
     val bgByState by animateColorAsState(
         targetValue = when {
-            habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
-            isCompletedOnDate -> EnergyLime.copy(alpha = 0.12f)
-            else -> DarkSurface
+            habit.isPaused -> CardGray.copy(alpha = 0.4f)
+            isCompletedOnDate -> BrandGreen.copy(alpha = 0.08f)
+            else -> CardGray
         },
         animationSpec = tween(durationMillis = 400),
         label = "bg"
@@ -647,9 +634,9 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
     
     val borderByState by animateColorAsState(
         targetValue = when {
-            habit.isPaused -> Color.White.copy(alpha = 0.05f)
-            isCompletedOnDate -> EnergyLime.copy(alpha = 0.6f)
-            else -> Color.White.copy(alpha = 0.08f)
+            habit.isPaused -> SoftWhite.copy(alpha = 0.05f)
+            isCompletedOnDate -> BrandGreen.copy(alpha = 0.4f)
+            else -> SoftWhite.copy(alpha = 0.1f)
         },
         animationSpec = tween(durationMillis = 400),
         label = "border"
@@ -657,7 +644,7 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
 
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         label = "scale"
     )
@@ -682,7 +669,7 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
                     }
                 }
             },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = bgByState,
         border = BorderStroke(1.dp, borderByState)
     ) {
@@ -700,11 +687,11 @@ fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit,
 @Composable
 private fun HabitIcon(habit: Habit, isCompletedOnDate: Boolean) {
     Box(
-        modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp))
-            .background(if (isCompletedOnDate) EnergyLime.copy(alpha = 0.2f) else habit.categoryColor.copy(alpha = 0.1f)),
+        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(16.dp))
+            .background(if (isCompletedOnDate) BrandGreen.copy(alpha = 0.15f) else habit.categoryColor.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = habit.icon, fontSize = 22.sp)
+        Text(text = habit.icon, fontSize = 26.sp)
     }
 }
 
@@ -717,24 +704,29 @@ private fun HabitInfo(habit: Habit, isCompletedOnDate: Boolean, modifier: Modifi
                 text = habit.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (isCompletedOnDate) EnergyLime else Color.White,
+                color = if (isCompletedOnDate) BrandGreen else SoftWhite,
                 textDecoration = if (isCompletedOnDate) TextDecoration.LineThrough else null
             )
             if (habit.isFavorite) {
-                Icon(Icons.Default.Favorite, null, tint = EnergyLime, modifier = Modifier.padding(start = 8.dp).size(16.dp))
+                Icon(Icons.Default.Favorite, null, tint = BrandGreen, modifier = Modifier.padding(start = 8.dp).size(14.dp))
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "${habit.category} | ${habit.goal}", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.4f))
-            habit.reminderTime?.let { time ->
-                Spacer(modifier = Modifier.width(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
+            Surface(
+                color = BrandCyan.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(6.dp),
+                border = BorderStroke(1.dp, BrandCyan.copy(alpha = 0.1f))
+            ) {
                 Text(
-                    text = "⏰ ${time.format(reminderFormatter)}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = EnergyLime.copy(alpha = 0.6f),
-                    fontWeight = FontWeight.Bold
+                    text = habit.category.uppercase(), 
+                    style = MaterialTheme.typography.labelSmall, 
+                    fontWeight = FontWeight.Bold,
+                    color = BrandCyan,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = habit.goal, style = MaterialTheme.typography.labelMedium, color = SoftWhite.copy(alpha = 0.4f), fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -743,22 +735,30 @@ private fun HabitInfo(habit: Habit, isCompletedOnDate: Boolean, modifier: Modifi
 private fun HabitActions(habit: Habit, expanded: Boolean, onExpand: (Boolean) -> Unit, onEdit: () -> Unit, onFavorite: () -> Unit, onPause: () -> Unit, onDelete: () -> Unit) {
     Box {
         IconButton(onClick = { onExpand(true) }) {
-            Icon(Icons.Default.MoreVert, null, tint = Color.White.copy(alpha = 0.4f))
+            Icon(Icons.Default.MoreVert, null, tint = SoftWhite.copy(alpha = 0.3f))
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { onExpand(false) }, modifier = Modifier.background(DarkSurface)) {
-            DropdownMenuItem(text = { Text("Editar", color = Color.White) }, onClick = { onExpand(false); onEdit() })
+        DropdownMenu(expanded = expanded, onDismissRequest = { onExpand(false) }, modifier = Modifier.background(CardGray)) {
             DropdownMenuItem(
-                text = { Text(if (habit.isFavorite) "Quitar favorito" else "Favorito", color = Color.White) },
+                text = { Text("Editar", color = SoftWhite) }, 
+                onClick = { onExpand(false); onEdit() },
+                leadingIcon = { Icon(Icons.Default.Edit, null, tint = BrandBlue) }
+            )
+            DropdownMenuItem(
+                text = { Text(if (habit.isFavorite) "Quitar favorito" else "Favorito", color = SoftWhite) },
                 onClick = { onExpand(false); onFavorite() },
-                leadingIcon = { Icon(if (habit.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, null, tint = EnergyLime) }
+                leadingIcon = { Icon(if (habit.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, null, tint = BrandGreen) }
             )
             DropdownMenuItem(
-                text = { Text(if (habit.isPaused) "Reanudar" else "Pausar", color = Color.White) },
+                text = { Text(if (habit.isPaused) "Reanudar" else "Pausar", color = SoftWhite) },
                 onClick = { onExpand(false); onPause() },
-                leadingIcon = { Icon(if (habit.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause, null, tint = HealthBlue) }
+                leadingIcon = { Icon(if (habit.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause, null, tint = BrandCyan) }
             )
-            HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-            DropdownMenuItem(text = { Text("Eliminar", color = SoftRed) }, onClick = { onExpand(false); onDelete() })
+            HorizontalDivider(color = SoftWhite.copy(alpha = 0.1f))
+            DropdownMenuItem(
+                text = { Text("Eliminar", color = SoftRed) }, 
+                onClick = { onExpand(false); onDelete() },
+                leadingIcon = { Icon(Icons.Default.Delete, null, tint = SoftRed) }
+            )
         }
     }
 }
@@ -766,12 +766,12 @@ private fun HabitActions(habit: Habit, expanded: Boolean, onExpand: (Boolean) ->
 @Composable
 private fun HabitCheckbox(isCompleted: Boolean) {
     Box(
-        modifier = Modifier.size(26.dp).clip(CircleShape)
-            .background(if (isCompleted) EnergyLime else Color.Transparent)
-            .border(2.dp, if (isCompleted) EnergyLime else Color.White.copy(alpha = 0.3f), CircleShape),
+        modifier = Modifier.size(28.dp).clip(CircleShape)
+            .background(if (isCompleted) BrandGreen else Color.Transparent)
+            .border(2.dp, if (isCompleted) BrandGreen else SoftWhite.copy(alpha = 0.2f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        if (isCompleted) Text("✓", fontWeight = FontWeight.Black, color = Color.Black, fontSize = 16.sp)
+        if (isCompleted) Text("✓", fontWeight = FontWeight.Black, color = BrandDark, fontSize = 16.sp)
     }
 }
 

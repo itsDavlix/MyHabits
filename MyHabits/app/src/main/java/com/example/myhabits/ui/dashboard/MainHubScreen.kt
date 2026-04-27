@@ -87,16 +87,16 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
     var password by remember(currentUser) { mutableStateOf(currentUser?.password ?: "") }
 
     val userLevel = when {
-        stats.totalCompletions > 30 -> "ELITE 🏆"
-        stats.totalCompletions > 15 -> "DISCIPLINADO 💪"
-        stats.totalCompletions > 5 -> "CONSTANTE ⚡"
+        stats.totalCompletions > 50 -> "ELITE 🏆"
+        stats.totalCompletions > 25 -> "DISCIPLINADO ⚡"
+        stats.totalCompletions > 10 -> "CONSTANTE 🌿"
         else -> "PRINCIPIANTE 🌱"
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepBlack)
+            .background(BrandDark)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -107,56 +107,57 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
             // Profile Header
             Box(contentAlignment = Alignment.BottomEnd) {
                 Surface(
-                    modifier = Modifier.size(100.dp),
-                    shape = RoundedCornerShape(30.dp),
-                    color = DarkSurface,
-                    border = androidx.compose.foundation.BorderStroke(2.dp, EnergyLime)
+                    modifier = Modifier.size(110.dp),
+                    shape = RoundedCornerShape(32.dp),
+                    color = CardGray,
+                    border = androidx.compose.foundation.BorderStroke(2.dp, BrandGreen)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text(text = "👤", fontSize = 50.sp)
+                        Text(text = "👤", fontSize = 60.sp)
                     }
                 }
                 Surface(
-                    color = EnergyLime,
+                    color = BrandGreen,
                     shape = CircleShape,
-                    modifier = Modifier.size(28.dp).offset(x = 4.dp, y = 4.dp)
+                    modifier = Modifier.size(32.dp).offset(x = 6.dp, y = 6.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text("⚡", fontSize = 14.sp)
+                        Text("⚡", fontSize = 16.sp, color = BrandDark)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = currentUser?.name?.uppercase() ?: "ATLETA",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black
+                color = SoftWhite,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
             )
             
             Surface(
-                color = EnergyLime.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(8.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, EnergyLime.copy(alpha = 0.3f)),
-                modifier = Modifier.padding(top = 4.dp)
+                color = BrandGreen.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BrandGreen.copy(alpha = 0.2f)),
+                modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text(
-                    text = "NIVEL DISCIPLINA: $userLevel",
-                    color = EnergyLime,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    text = userLevel,
+                    color = BrandGreen,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             // Stats Grid
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 QuickStatCard(
-                    title = "Racha Actual",
+                    title = "Racha",
                     value = "${stats.currentStreak}",
                     unit = "días",
                     icon = "🔥",
@@ -165,96 +166,52 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 QuickStatCard(
                     title = "Hábitos",
                     value = "${habits.size}",
-                    unit = "totales",
-                    icon = "📝",
+                    unit = "total",
+                    icon = "🌿",
                     modifier = Modifier.weight(1f)
                 )
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 QuickStatCard(
-                    title = "Completados",
+                    title = "Logros",
                     value = "${stats.totalCompletions}",
-                    unit = "veces",
+                    unit = "votos",
                     icon = "✅",
                     modifier = Modifier.weight(1f)
                 )
                 QuickStatCard(
                     title = "Favoritos",
                     value = "${habits.count { it.isFavorite }}",
-                    unit = "habits",
+                    unit = "items",
                     icon = "⭐",
                     modifier = Modifier.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
-
-            var isEditPressed by remember { mutableStateOf(false) }
-            val editScale by animateFloatAsState(
-                targetValue = if (isEditPressed) 0.96f else 1f,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                label = "editScale"
-            )
+            Spacer(modifier = Modifier.height(48.dp))
 
             Button(
                 onClick = { isEditing = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .scale(editScale)
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                when (event.type) {
-                                    PointerEventType.Press -> isEditPressed = true
-                                    PointerEventType.Release -> isEditPressed = false
-                                    PointerEventType.Exit -> isEditPressed = false
-                                }
-                            }
-                        }
-                    },
-                colors = ButtonDefaults.buttonColors(containerColor = DarkSurface, contentColor = Color.White),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = CardGray, contentColor = SoftWhite),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                border = androidx.compose.foundation.BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f))
             ) {
-                Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("EDITAR PERFIL", fontWeight = FontWeight.Bold)
+                Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp), tint = BrandBlue)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("CONFIGURACIÓN DE PERFIL", fontWeight = FontWeight.Bold)
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            var isLogoutPressed by remember { mutableStateOf(false) }
-            val logoutScale by animateFloatAsState(
-                targetValue = if (isLogoutPressed) 0.96f else 1f,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                label = "logoutScale"
-            )
-
             Button(
                 onClick = { 
                     com.example.myhabits.data.SessionManager.setCurrentUser(null)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .scale(logoutScale)
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                when (event.type) {
-                                    PointerEventType.Press -> isLogoutPressed = true
-                                    PointerEventType.Release -> isLogoutPressed = false
-                                    PointerEventType.Exit -> isLogoutPressed = false
-                                }
-                            }
-                        }
-                    },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = SoftRed.copy(alpha = 0.1f), contentColor = SoftRed),
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, SoftRed.copy(alpha = 0.2f))
@@ -262,42 +219,44 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
             }
         } else {
-            // Edit Mode (kept mostly as is but styled better)
+            // Edit Mode
             Text(
                 text = "EDITAR PERFIL",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Black,
-                color = Color.White,
+                color = SoftWhite,
                 modifier = Modifier.align(Alignment.Start)
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EnergyLime,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = EnergyLime,
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White
+                    focusedBorderColor = BrandGreen,
+                    unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                    focusedLabelColor = BrandGreen,
+                    focusedTextColor = SoftWhite,
+                    unfocusedTextColor = SoftWhite
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EnergyLime,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = EnergyLime,
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White
+                    focusedBorderColor = BrandGreen,
+                    unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                    focusedLabelColor = BrandGreen,
+                    focusedTextColor = SoftWhite,
+                    unfocusedTextColor = SoftWhite
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -306,16 +265,17 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 onValueChange = { password = it },
                 label = { Text("Nueva Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = EnergyLime,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = EnergyLime,
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White
+                    focusedBorderColor = BrandGreen,
+                    unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                    focusedLabelColor = BrandGreen,
+                    focusedTextColor = SoftWhite,
+                    unfocusedTextColor = SoftWhite
                 )
             )
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = { 
@@ -326,10 +286,10 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                     isEditing = false 
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = EnergyLime, contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = BrandDark),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold)
+                Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Black)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -338,7 +298,7 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
                 onClick = { isEditing = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("CANCELAR", color = Color.White.copy(alpha = 0.5f))
+                Text("CANCELAR", color = SoftWhite.copy(alpha = 0.4f))
             }
         }
     }
@@ -348,18 +308,18 @@ fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsV
 fun QuickStatCard(title: String, value: String, unit: String, icon: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        color = DarkSurface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        shape = RoundedCornerShape(24.dp),
+        color = CardGray,
+        border = androidx.compose.foundation.BorderStroke(1.dp, SoftWhite.copy(alpha = 0.05f))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = icon, fontSize = 16.sp)
+                Text(text = icon, fontSize = 18.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = title.uppercase(),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.4f),
+                    color = SoftWhite.copy(alpha = 0.3f),
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 )
@@ -368,16 +328,16 @@ fun QuickStatCard(title: String, value: String, unit: String, icon: String, modi
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = value,
-                    fontSize = 28.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White
+                    color = SoftWhite
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = unit,
                     fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.3f),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    color = SoftWhite.copy(alpha = 0.2f),
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
         }
@@ -395,8 +355,9 @@ fun BottomBar(navController: androidx.navigation.NavHostController) {
     val currentDestination = navBackStackEntry?.destination
 
     NavigationBar(
-        containerColor = DarkSurface,
-        contentColor = Color.White
+        containerColor = CardGray,
+        contentColor = SoftWhite,
+        tonalElevation = 8.dp
     ) {
         screens.forEach { screen ->
             val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
@@ -415,19 +376,20 @@ fun BottomBar(navController: androidx.navigation.NavHostController) {
                 icon = {
                     Text(
                         text = screen.icon,
-                        fontSize = 20.sp,
-                        color = if (selected) EnergyLime else Color.White.copy(alpha = 0.5f)
+                        fontSize = 22.sp,
+                        color = if (selected) BrandGreen else SoftWhite.copy(alpha = 0.4f)
                     )
                 },
                 label = {
                     Text(
                         text = screen.title,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selected) EnergyLime else Color.White.copy(alpha = 0.5f)
+                        fontWeight = if (selected) FontWeight.Black else FontWeight.Bold,
+                        color = if (selected) BrandGreen else SoftWhite.copy(alpha = 0.4f),
+                        fontSize = 10.sp
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color.Transparent
+                    indicatorColor = BrandGreen.copy(alpha = 0.1f)
                 )
             )
         }

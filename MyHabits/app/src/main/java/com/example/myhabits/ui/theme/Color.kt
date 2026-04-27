@@ -10,8 +10,19 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val DeepBlack = Color(0xFF0A0A0A)
-val DarkSurface = Color(0xFF1A1A1A)
-val EnergyLime = Color(0xFFD4FF00)
-val HealthBlue = Color(0xFF00D2FF)
+val BrandDark = Color(0xFF071D2E)
+val BrandBlue = Color(0xFF1E88C8)
+val BrandCyan = Color(0xFF35C8F4)
+val BrandGreen = Color(0xFF53D86A)
+val BrandLightGreen = Color(0xFFB7F46A)
+val BrandDarkGreen = Color(0xFF0E6B4E)
+val SoftWhite = Color(0xFFF4FAFF)
+val CardGray = Color(0xFF102C3A)
+
+// Mantener los antiguos para evitar errores de compilación inmediatos si se usan en otros archivos
+// que aún no he rediseñado, pero los marcaré para borrar después.
+val DeepBlack = BrandDark
+val DarkSurface = CardGray
+val EnergyLime = BrandGreen
+val HealthBlue = BrandBlue
 val SoftRed = Color(0xFFFF5252)

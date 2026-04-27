@@ -5,22 +5,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myhabits.ui.theme.DarkSurface
-import com.example.myhabits.ui.theme.DeepBlack
-import com.example.myhabits.ui.theme.EnergyLime
-import com.example.myhabits.ui.theme.HealthBlue
+import com.example.myhabits.ui.theme.*
 
 @Composable
 fun StatsScreen(viewModel: StatsViewModel) {
@@ -29,14 +26,14 @@ fun StatsScreen(viewModel: StatsViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepBlack)
+            .background(BrandDark)
             .padding(20.dp)
     ) {
         Text(
-            text = "ESTADÍSTICAS",
+            text = "PROGRESO PERSONAL",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Black,
-            color = Color.White
+            color = SoftWhite
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -48,14 +45,13 @@ fun StatsScreen(viewModel: StatsViewModel) {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "📊", fontSize = 64.sp)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "COMPLETA HÁBITOS PARA VER TUS ESTADÍSTICAS",
+                        text = "TU PROGRESO SE MOSTRARÁ AQUÍ",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White.copy(alpha = 0.5f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 32.dp)
+                        color = SoftWhite.copy(alpha = 0.5f),
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -70,10 +66,10 @@ fun StatsScreen(viewModel: StatsViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                item { StatCard("Racha Actual", "${state.currentStreak} 🔥", EnergyLime) }
-                item { StatCard("Mejor Racha", "${state.bestStreak} 🏆", HealthBlue) }
-                item { StatCard("Total Completados", "${state.totalCompletions}", Color.White) }
-                item { StatCard("Cumplimiento Semanal", "${(state.weeklyCompletionRate * 100).toInt()}%", EnergyLime) }
+                item { StatCard("Racha Actual", "${state.currentStreak}", "días", BrandGreen) }
+                item { StatCard("Mejor Racha", "${state.bestStreak}", "récord", BrandBlue) }
+                item { StatCard("Completados", "${state.totalCompletions}", "total", BrandCyan) }
+                item { StatCard("Rendimiento", "${(state.weeklyCompletionRate * 100).toInt()}%", "semanal", BrandLightGreen) }
             }
             
             Spacer(modifier = Modifier.height(24.dp))
@@ -89,20 +85,21 @@ fun WeeklyActivityChart(data: List<Float>) {
     
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = DarkSurface,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        shape = RoundedCornerShape(24.dp),
+        color = CardGray,
+        border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.05f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "ACTIVIDAD ESTA SEMANA",
+                text = "ACTIVIDAD SEMANAL",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White.copy(alpha = 0.5f)
+                color = SoftWhite.copy(alpha = 0.4f),
+                letterSpacing = 1.sp
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Row(
-                modifier = Modifier.fillMaxWidth().height(120.dp),
+                modifier = Modifier.fillMaxWidth().height(140.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
@@ -110,16 +107,21 @@ fun WeeklyActivityChart(data: List<Float>) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
-                                .width(24.dp)
-                                .fillMaxHeight(value.coerceIn(0.05f, 1f))
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(if (value >= 0.8f) EnergyLime else HealthBlue)
+                                .width(28.dp)
+                                .fillMaxHeight(value.coerceIn(0.1f, 1f))
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(BrandGreen, BrandBlue)
+                                    )
+                                )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = days[index],
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.6f)
+                            fontWeight = FontWeight.Bold,
+                            color = SoftWhite.copy(alpha = 0.4f)
                         )
                     }
                 }
@@ -129,25 +131,36 @@ fun WeeklyActivityChart(data: List<Float>) {
 }
 
 @Composable
-fun StatCard(title: String, value: String, color: Color) {
+fun StatCard(title: String, value: String, unit: String, color: Color) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = DarkSurface,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        shape = RoundedCornerShape(20.dp),
+        color = CardGray,
+        border = BorderStroke(1.dp, color.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                color = Color.White.copy(alpha = 0.5f)
+                text = title.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = SoftWhite.copy(alpha = 0.3f),
+                letterSpacing = 0.5.sp
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Black,
-                color = color
-            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    color = color
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = unit,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SoftWhite.copy(alpha = 0.2f),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
         }
     }
 }
@@ -156,33 +169,41 @@ fun StatCard(title: String, value: String, color: Color) {
 fun CategoryHighlightCard(category: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = EnergyLime.copy(alpha = 0.1f),
-        border = BorderStroke(1.dp, EnergyLime.copy(alpha = 0.2f))
+        shape = RoundedCornerShape(20.dp),
+        color = CardGray,
+        border = BorderStroke(1.dp, BrandGreen.copy(alpha = 0.2f))
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(EnergyLime),
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(BrandGreen, BrandCyan)
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🌟", fontSize = 24.sp)
+                Text("🏆", fontSize = 32.sp)
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(20.dp))
             Column {
                 Text(
-                    text = "CATEGORÍA TOP",
+                    text = "CATEGORÍA DOMINANTE",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = EnergyLime
+                    color = BrandGreen,
+                    letterSpacing = 1.sp
                 )
                 Text(
                     text = category,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Black,
-                    color = Color.White
+                    color = SoftWhite
                 )
             }
         }

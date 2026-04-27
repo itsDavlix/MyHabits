@@ -13,16 +13,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = EnergyLime,
-    secondary = HealthBlue,
-    tertiary = SoftRed,
-    background = DeepBlack,
-    surface = DarkSurface,
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
+    primary = BrandGreen,
+    secondary = BrandBlue,
+    tertiary = BrandCyan,
+    background = BrandDark,
+    surface = CardGray,
+    onPrimary = BrandDark,
+    onSecondary = SoftWhite,
+    onTertiary = BrandDark,
+    onBackground = SoftWhite,
+    onSurface = SoftWhite,
     error = SoftRed
 )
 

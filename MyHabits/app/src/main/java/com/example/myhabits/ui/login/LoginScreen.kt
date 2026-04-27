@@ -35,6 +35,10 @@ import com.example.myhabits.ui.theme.DeepBlack
 import com.example.myhabits.ui.theme.EnergyLime
 import com.example.myhabits.ui.theme.MyHabitsTheme
 
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Brush
+import com.example.myhabits.ui.theme.*
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit, 
@@ -48,7 +52,11 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepBlack),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(BrandDark, BrandDarkGreen)
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -56,55 +64,59 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(24.dp)
                 .shadow(
-                    elevation = 20.dp,
-                    shape = RoundedCornerShape(28.dp),
-                    spotColor = EnergyLime.copy(alpha = 0.5f)
+                    elevation = 24.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    spotColor = BrandGreen.copy(alpha = 0.3f)
                 ),
-            shape = RoundedCornerShape(28.dp),
-            color = DarkSurface,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+            shape = RoundedCornerShape(32.dp),
+            color = CardGray,
+            border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f))
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 40.dp, horizontal = 24.dp),
+                    .padding(vertical = 48.dp, horizontal = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo/Emoji Central
-                Surface(
-                    modifier = Modifier.size(80.dp),
-                    shape = CircleShape,
-                    color = EnergyLime.copy(alpha = 0.1f),
-                    border = BorderStroke(2.dp, EnergyLime)
+                // Logo placeholder stylized
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(BrandBlue, BrandGreen)
+                            ),
+                            shape = RoundedCornerShape(24.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(text = "⚡", fontSize = 40.sp)
-                    }
+                    Text(text = "🌿", fontSize = 50.sp)
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
                     text = "MYHABITS",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Black,
-                    color = EnergyLime,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    color = SoftWhite,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 
                 Text(
-                    text = "CONSTRUYE DISCIPLINA DIARIA",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "TU PROGRESO, UN HÁBITO A LA VEZ",
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    color = Color.White.copy(alpha = 0.5f),
-                    modifier = Modifier.padding(bottom = 40.dp)
+                    letterSpacing = 1.sp,
+                    color = BrandCyan,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 48.dp)
                 )
 
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
-                    label = { Text("CORREO ELECTRÓNICO", color = Color.White.copy(alpha = 0.4f)) },
+                    label = { Text("Correo Electrónico", color = SoftWhite.copy(alpha = 0.5f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onPreviewKeyEvent { 
@@ -121,11 +133,11 @@ fun LoginScreen(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = EnergyLime,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                        errorBorderColor = Color.Red
+                        focusedTextColor = SoftWhite,
+                        unfocusedTextColor = SoftWhite,
+                        focusedBorderColor = BrandGreen,
+                        unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                        cursorColor = BrandGreen
                     ),
                     isError = uiState.error != null,
                     keyboardOptions = KeyboardOptions(
@@ -134,16 +146,15 @@ fun LoginScreen(
                     ),
                     keyboardActions = KeyboardActions(
                         onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
+                    )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
-                    label = { Text("CONTRASEÑA", color = Color.White.copy(alpha = 0.4f)) },
+                    label = { Text("Contraseña", color = SoftWhite.copy(alpha = 0.5f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onPreviewKeyEvent {
@@ -157,11 +168,11 @@ fun LoginScreen(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = EnergyLime,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                        errorBorderColor = Color.Red
+                        focusedTextColor = SoftWhite,
+                        unfocusedTextColor = SoftWhite,
+                        focusedBorderColor = BrandGreen,
+                        unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                        cursorColor = BrandGreen
                     ),
                     isError = uiState.error != null,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -172,13 +183,10 @@ fun LoginScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { viewModel.login(onLoginSuccess) }
                     ),
-                    leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 12.dp)) },
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
-
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, contentDescription = description, tint = Color.White.copy(alpha = 0.4f))
+                            Icon(imageVector = image, contentDescription = null, tint = SoftWhite.copy(alpha = 0.4f))
                         }
                     }
                 )
@@ -192,7 +200,7 @@ fun LoginScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(48.dp))
 
                 Button(
                     onClick = { viewModel.login(onLoginSuccess) },
@@ -201,8 +209,8 @@ fun LoginScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = EnergyLime,
-                        contentColor = Color.Black
+                        containerColor = BrandGreen,
+                        contentColor = BrandDark
                     )
                 ) {
                     Text(
@@ -212,12 +220,12 @@ fun LoginScreen(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(onClick = onNavigateToRegistration) {
                     Text(
                         text = "¿NO TIENES CUENTA? REGÍSTRATE",
-                        color = EnergyLime.copy(alpha = 0.7f),
+                        color = BrandCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )

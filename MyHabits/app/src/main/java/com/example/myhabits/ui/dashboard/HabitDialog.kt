@@ -18,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -38,7 +40,7 @@ fun HabitDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, Color, String, String, LocalTime?) -> Unit
 ) {
-    val categories = listOf("Poder", "Cardio", "Nutrición", "Flex", "Recuperación", "Descanso", "Otro...")
+    val categories = listOf("Crecimiento", "Salud", "Deporte", "Mente", "Social", "Finanzas", "Otro...")
     
     var name by remember { mutableStateOf(habit?.name ?: "") }
     var customCategory by remember { mutableStateOf("") }
@@ -47,61 +49,51 @@ fun HabitDialog(
     }
     
     var goal by remember { mutableStateOf(habit?.goal ?: "") }
-    var selectedColor by remember { mutableStateOf(habit?.categoryColor ?: EnergyLime) }
+    var selectedColor by remember { mutableStateOf(habit?.categoryColor ?: BrandGreen) }
     var selectedIcon by remember { mutableStateOf(habit?.icon ?: "✨") }
     var frequency by remember { mutableStateOf(habit?.frequency ?: "Diaria") }
     var reminderTime by remember { mutableStateOf(habit?.reminderTime) }
     
     var categoryExpanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    
     val timePickerState = rememberTimePickerState(
-        initialHour = if (reminderTime != null) {
-            if (reminderTime!!.hour == 0) 12 
-            else if (reminderTime!!.hour > 12) reminderTime!!.hour - 12 
-            else reminderTime!!.hour
-        } else 10,
+        initialHour = reminderTime?.hour ?: 10,
         initialMinute = reminderTime?.minute ?: 0,
         is24Hour = false
     )
-    var amPmSelection by remember { mutableStateOf(if ((reminderTime?.hour ?: 10) < 12) "AM" else "PM") }
-    
-    val daysOfWeek = listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
-    var selectedDays by remember { 
-        mutableStateOf(if (frequency.contains(",")) frequency.split(", ").toSet() else emptySet()) 
-    }
     
     val focusManager = LocalFocusManager.current
     
     val onHabitConfirm = {
         val finalCategory = if (selectedCategory == "Otro...") customCategory else selectedCategory
         if (name.isNotBlank() && goal.isNotBlank() && finalCategory.isNotBlank()) {
-            val finalFreq = if (frequency == "Días específicos") selectedDays.joinToString(", ") else frequency
-            onConfirm(name, goal, finalCategory, selectedColor, selectedIcon, finalFreq, reminderTime)
+            onConfirm(name, goal, finalCategory, selectedColor, selectedIcon, frequency, reminderTime)
         }
     }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f).padding(16.dp),
-            shape = RoundedCornerShape(24.dp),
-            color = DarkSurface
+            shape = RoundedCornerShape(32.dp),
+            color = CardGray,
+            border = androidx.compose.foundation.BorderStroke(1.dp, SoftWhite.copy(alpha = 0.05f))
         ) {
             Column(
                 modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Text(text = if (habit == null) "NUEVO HÁBITO" else "EDITAR HÁBITO", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = Color.White)
+                Text(
+                    text = if (habit == null) "NUEVO HÁBITO" else "EDITAR HÁBITO", 
+                    style = MaterialTheme.typography.headlineSmall, 
+                    fontWeight = FontWeight.Black, 
+                    color = SoftWhite
+                )
 
                 HabitTextField(
                     label = "Nombre del hábito",
                     value = name,
                     onValueChange = { name = it },
-                    modifier = Modifier.onPreviewKeyEvent {
-                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
-                            focusManager.moveFocus(FocusDirection.Down)
-                            true
-                        } else false
-                    },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
@@ -118,23 +110,24 @@ fun HabitDialog(
                             label = { Text("Categoría") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = EnergyLime,
-                                unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                                focusedLabelColor = EnergyLime,
-                                unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                focusedBorderColor = BrandGreen,
+                                unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                                focusedLabelColor = BrandGreen,
+                                unfocusedLabelColor = SoftWhite.copy(alpha = 0.5f),
+                                focusedTextColor = SoftWhite,
+                                unfocusedTextColor = SoftWhite
                             )
                         )
                         ExposedDropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
-                            modifier = Modifier.background(DarkSurface)
+                            modifier = Modifier.background(CardGray)
                         ) {
                             categories.forEach { cat ->
                                 DropdownMenuItem(
-                                    text = { Text(cat, color = Color.White) },
+                                    text = { Text(cat, color = SoftWhite) },
                                     onClick = {
                                         selectedCategory = cat
                                         categoryExpanded = false
@@ -148,8 +141,8 @@ fun HabitDialog(
 
                 if (selectedCategory == "Otro...") {
                     HabitTextField(
-                        label = "Nombre de la categoría personalizada",
-                        value = if (customCategory.isEmpty() && habit != null && habit.category !in categories) habit.category.also { customCategory = it } else customCategory,
+                        label = "Categoría personalizada",
+                        value = customCategory,
                         onValueChange = { customCategory = it },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -157,34 +150,22 @@ fun HabitDialog(
                 }
 
                 HabitTextField(
-                    label = "Meta (ej: 2L, 30 min)",
+                    label = "Meta diaria (ej: 2L, 30 min, 10 páginas)",
                     value = goal,
                     onValueChange = { goal = it },
-                    modifier = Modifier.onPreviewKeyEvent {
-                        if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
-                            onHabitConfirm()
-                            true
-                        } else false
-                    },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { onHabitConfirm() })
                 )
 
                 SectionHeader("FRECUENCIA")
-                FrequencySelector(frequency) { 
-                    frequency = it
-                    if (it != "Días específicos") selectedDays = emptySet()
+                FrequencySelector(frequency) { frequency = it }
+
+                SectionHeader("COLOR Y ESTILO")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ColorPicker(selectedColor, Modifier.weight(1f)) { selectedColor = it }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    IconPicker(selectedIcon) { selectedIcon = it }
                 }
-
-                if (frequency == "Días específicos") {
-                    DaysSelector(daysOfWeek, selectedDays) { selectedDays = it }
-                }
-
-                SectionHeader("COLOR")
-                ColorPicker(selectedColor) { selectedColor = it }
-
-                SectionHeader("ÍCONO")
-                IconPicker(selectedIcon) { selectedIcon = it }
 
                 SectionHeader("RECORDATORIO")
                 ReminderSelector(reminderTime, { showTimePicker = true }, { reminderTime = null })
@@ -194,58 +175,15 @@ fun HabitDialog(
                         onDismissRequest = { showTimePicker = false },
                         confirmButton = {
                             TextButton(onClick = {
-                                var finalHour = timePickerState.hour
-                                // El TimePicker con is24Hour=false ya maneja AM/PM internamente, 
-                                // pero mantenemos los botones externos para cumplir con la petición de "tercer selector"
-                                // y asegurar que el usuario tenga el control visual que pidió.
-                                
-                                // Si el usuario usó los botones externos de AM/PM, forzamos ese periodo:
-                                if (amPmSelection == "AM") {
-                                    if (finalHour >= 12) finalHour -= 12
-                                } else { // PM
-                                    if (finalHour < 12) finalHour += 12
-                                }
-
-                                reminderTime = LocalTime.of(finalHour, timePickerState.minute)
+                                reminderTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                                 showTimePicker = false
-                            }) { Text("OK", color = EnergyLime) }
+                            }) { Text("OK", color = BrandGreen, fontWeight = FontWeight.Bold) }
                         },
                         dismissButton = {
-                            TextButton(onClick = { showTimePicker = false }) { Text("CANCELAR", color = Color.White.copy(alpha = 0.6f)) }
+                            TextButton(onClick = { showTimePicker = false }) { Text("CANCELAR", color = SoftWhite.copy(alpha = 0.6f)) }
                         }
                     ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            TimePicker(state = timePickerState)
-                            
-                            // Nuevo selector manual de AM/PM
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                listOf("AM", "PM").forEach { period ->
-                                    val isSel = amPmSelection == period
-                                    Surface(
-                                        onClick = { amPmSelection = period },
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (isSel) EnergyLime else Color.White.copy(alpha = 0.1f),
-                                        modifier = Modifier.width(80.dp).padding(horizontal = 4.dp)
-                                    ) {
-                                        Box(modifier = Modifier.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = period,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSel) Color.Black else Color.White
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        TimePicker(state = timePickerState)
                     }
                 }
 
@@ -253,16 +191,15 @@ fun HabitDialog(
 
                 Button(
                     onClick = onHabitConfirm,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = EnergyLime, contentColor = Color.Black),
-                    shape = RoundedCornerShape(16.dp),
-                    contentPadding = PaddingValues(16.dp)
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = BrandDark),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(text = if (habit == null) "CREAR HÁBITO" else "GUARDAR CAMBIOS", fontWeight = FontWeight.Black)
                 }
 
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = "CANCELAR", color = Color.White.copy(alpha = 0.6f))
+                    Text(text = "CANCELAR", color = SoftWhite.copy(alpha = 0.4f))
                 }
             }
         }
@@ -281,8 +218,8 @@ fun TimePickerDialog(
         confirmButton = confirmButton,
         dismissButton = dismissButton,
         text = content,
-        containerColor = DarkSurface,
-        shape = RoundedCornerShape(24.dp)
+        containerColor = CardGray,
+        shape = RoundedCornerShape(28.dp)
     )
 }
 
@@ -300,40 +237,47 @@ private fun HabitTextField(
         onValueChange = onValueChange,
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         singleLine = true,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = EnergyLime,
-            unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-            focusedLabelColor = EnergyLime,
-            unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
-            cursorColor = EnergyLime,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White
+            focusedBorderColor = BrandGreen,
+            unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+            focusedLabelColor = BrandGreen,
+            unfocusedLabelColor = SoftWhite.copy(alpha = 0.5f),
+            cursorColor = BrandGreen,
+            focusedTextColor = SoftWhite,
+            unfocusedTextColor = SoftWhite
         )
     )
 }
 
 @Composable
 private fun SectionHeader(title: String) {
-    Text(text = title, style = MaterialTheme.typography.labelLarge, color = Color.White.copy(alpha = 0.5f))
+    Text(
+        text = title, 
+        style = MaterialTheme.typography.labelLarge, 
+        fontWeight = FontWeight.Bold, 
+        color = SoftWhite.copy(alpha = 0.4f),
+        letterSpacing = 1.sp
+    )
 }
 
 @Composable
 private fun FrequencySelector(selected: String, onSelect: (String) -> Unit) {
-    val frequencies = listOf("Diaria", "Semanal", "Días específicos")
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    val frequencies = listOf("Diaria", "Semanal")
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         frequencies.forEach { freq ->
-            val isSel = selected == freq || (selected.contains(",") && freq == "Días específicos")
+            val isSel = selected == freq
             Surface(
                 onClick = { onSelect(freq) },
                 shape = RoundedCornerShape(12.dp),
-                color = if (isSel) EnergyLime else Color.White.copy(alpha = 0.05f),
+                color = if (isSel) BrandGreen else SoftWhite.copy(alpha = 0.05f),
                 modifier = Modifier.weight(1f)
             ) {
-                Box(modifier = Modifier.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
-                    Text(text = freq, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.Black else Color.White)
+                Box(modifier = Modifier.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                    Text(text = freq, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = if (isSel) BrandDark else SoftWhite)
                 }
             }
         }
@@ -341,29 +285,19 @@ private fun FrequencySelector(selected: String, onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun DaysSelector(days: List<String>, selected: Set<String>, onUpdate: (Set<String>) -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        days.forEach { day ->
-            val isSel = selected.contains(day)
+private fun ColorPicker(selected: Color, modifier: Modifier = Modifier, onSelect: (Color) -> Unit) {
+    val colors = listOf(BrandGreen, BrandBlue, BrandCyan, BrandLightGreen, Color(0xFFFF8A65), Color(0xFFCE93D8))
+    LazyRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items(colors) { color ->
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape)
-                    .background(if (isSel) EnergyLime else Color.White.copy(alpha = 0.05f))
-                    .clickable { onUpdate(if (isSel) selected - day else selected + day) },
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(color)
+                    .clickable { onSelect(color) }, 
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = day.take(1), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isSel) Color.Black else Color.White)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ColorPicker(selected: Color, onSelect: (Color) -> Unit) {
-    val colors = listOf(EnergyLime, HealthBlue, Color(0xFFFF3D00), Color(0xFFD500F9), Color(0xFF2979FF), Color(0xFF76FF03), Color(0xFFFFEA00), Color(0xFFC6FF00))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(colors) { color ->
-            Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(color).clickable { onSelect(color) }, contentAlignment = Alignment.Center) {
-                if (selected == color) Text("✓", color = Color.Black, fontWeight = FontWeight.Bold)
+                if (selected == color) Icon(Icons.Default.Check, null, tint = BrandDark, modifier = Modifier.size(20.dp))
             }
         }
     }
@@ -371,16 +305,34 @@ private fun ColorPicker(selected: Color, onSelect: (Color) -> Unit) {
 
 @Composable
 private fun IconPicker(selected: String, onSelect: (String) -> Unit) {
-    val icons = listOf("✨", "🏋️", "🏃", "🍗", "🧘", "💧", "🌙", "🔥", "📚", "🍎")
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(icons) { icon ->
-            Box(
-                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(8.dp))
-                    .background(if (selected == icon) EnergyLime else Color.White.copy(alpha = 0.05f))
-                    .clickable { onSelect(icon) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = icon, fontSize = 20.sp)
+    val icons = listOf("✨", "🌿", "💧", "🧘", "🏃", "🍎")
+    var expanded by remember { mutableStateOf(false) }
+    
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(12.dp),
+            color = SoftWhite.copy(alpha = 0.05f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f))
+        ) {
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                Text(text = selected, fontSize = 24.sp)
+            }
+        }
+        
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(CardGray)) {
+            Row(modifier = Modifier.padding(8.dp)) {
+                icons.forEach { icon ->
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onSelect(icon); expanded = false },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = icon, fontSize = 20.sp)
+                    }
+                }
             }
         }
     }
@@ -391,8 +343,8 @@ private fun ReminderSelector(time: LocalTime?, onSet: () -> Unit, onClear: () ->
     val formatter = DateTimeFormatter.ofPattern("hh:mm a")
     Surface(
         onClick = onSet,
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.05f),
+        shape = RoundedCornerShape(16.dp),
+        color = SoftWhite.copy(alpha = 0.05f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -405,13 +357,13 @@ private fun ReminderSelector(time: LocalTime?, onSet: () -> Unit, onClear: () ->
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = time?.format(formatter) ?: "Sin recordatorio",
-                    color = if (time != null) EnergyLime else Color.White.copy(alpha = 0.5f),
+                    color = if (time != null) BrandGreen else SoftWhite.copy(alpha = 0.4f),
                     fontWeight = FontWeight.Bold
                 )
             }
             if (time != null) {
-                IconButton(onClick = { onClear() }, modifier = Modifier.size(24.dp)) {
-                    Text(text = "✕", color = SoftRed, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                IconButton(onClick = onClear, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Close, null, tint = SoftRed, modifier = Modifier.size(16.dp))
                 }
             }
         }

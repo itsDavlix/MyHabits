@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,10 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myhabits.ui.theme.DarkSurface
-import com.example.myhabits.ui.theme.DeepBlack
-import com.example.myhabits.ui.theme.EnergyLime
-import com.example.myhabits.ui.theme.MyHabitsTheme
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextAlign
+import com.example.myhabits.ui.theme.*
 
 @Composable
 fun RegistrationScreen(
@@ -46,7 +44,11 @@ fun RegistrationScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepBlack),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(BrandDark, BrandDarkGreen)
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -54,31 +56,34 @@ fun RegistrationScreen(
                 .fillMaxWidth()
                 .padding(24.dp)
                 .shadow(
-                    elevation = 20.dp,
-                    shape = RoundedCornerShape(28.dp),
-                    spotColor = EnergyLime.copy(alpha = 0.5f)
+                    elevation = 24.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    spotColor = BrandGreen.copy(alpha = 0.3f)
                 ),
-            shape = RoundedCornerShape(28.dp),
-            color = DarkSurface,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+            shape = RoundedCornerShape(32.dp),
+            color = CardGray,
+            border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f))
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 40.dp, horizontal = 24.dp)
+                    .padding(vertical = 40.dp, horizontal = 28.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo/Emoji Registration
-                Surface(
-                    modifier = Modifier.size(80.dp),
-                    shape = CircleShape,
-                    color = EnergyLime.copy(alpha = 0.1f),
-                    border = BorderStroke(2.dp, EnergyLime)
+                // Logo placeholder stylized
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(BrandBlue, BrandGreen)
+                            ),
+                            shape = RoundedCornerShape(20.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(text = "🛡️", fontSize = 40.sp)
-                    }
+                    Text(text = "🛡️", fontSize = 40.sp)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -87,23 +92,24 @@ fun RegistrationScreen(
                     text = "REGISTRO",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Black,
-                    color = EnergyLime,
+                    color = SoftWhite,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
                 Text(
-                    text = "ÚNETE AL EQUIPO ELITE",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "CONSTRUYE DISCIPLINA DIARIA",
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    color = Color.White.copy(alpha = 0.5f),
+                    letterSpacing = 1.sp,
+                    color = BrandCyan,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 40.dp)
                 )
 
                 OutlinedTextField(
                     value = uiState.name,
                     onValueChange = { viewModel.onNameChange(it) },
-                    label = { Text("NOMBRE COMPLETO", color = Color.White.copy(alpha = 0.4f)) },
+                    label = { Text("Nombre Completo", color = SoftWhite.copy(alpha = 0.5f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onPreviewKeyEvent {
@@ -115,10 +121,11 @@ fun RegistrationScreen(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = EnergyLime,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f)
+                        focusedTextColor = SoftWhite,
+                        unfocusedTextColor = SoftWhite,
+                        focusedBorderColor = BrandGreen,
+                        unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                        cursorColor = BrandGreen
                     ),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -128,8 +135,7 @@ fun RegistrationScreen(
                         onNext = { focusManager.moveFocus(FocusDirection.Down) }
                     ),
                     isError = uiState.nameError != null,
-                    supportingText = { uiState.nameError?.let { Text(it, color = Color.Red) } },
-                    leadingIcon = { Text("👤", modifier = Modifier.padding(start = 12.dp)) }
+                    supportingText = { uiState.nameError?.let { Text(it, color = Color.Red) } }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -137,7 +143,7 @@ fun RegistrationScreen(
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
-                    label = { Text("CORREO ELECTRÓNICO", color = Color.White.copy(alpha = 0.4f)) },
+                    label = { Text("Correo Electrónico", color = SoftWhite.copy(alpha = 0.5f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { focusState ->
@@ -154,10 +160,11 @@ fun RegistrationScreen(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = EnergyLime,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f)
+                        focusedTextColor = SoftWhite,
+                        unfocusedTextColor = SoftWhite,
+                        focusedBorderColor = BrandGreen,
+                        unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                        cursorColor = BrandGreen
                     ),
                     isError = uiState.emailError != null,
                     supportingText = { uiState.emailError?.let { Text(it, color = Color.Red) } },
@@ -167,8 +174,7 @@ fun RegistrationScreen(
                     ),
                     keyboardActions = KeyboardActions(
                         onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    leadingIcon = { Text("📧", modifier = Modifier.padding(start = 12.dp)) }
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -176,7 +182,7 @@ fun RegistrationScreen(
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
-                    label = { Text("CONTRASEÑA", color = Color.White.copy(alpha = 0.4f)) },
+                    label = { Text("Contraseña", color = SoftWhite.copy(alpha = 0.5f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onPreviewKeyEvent {
@@ -188,10 +194,11 @@ fun RegistrationScreen(
                     shape = RoundedCornerShape(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = EnergyLime,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f)
+                        focusedTextColor = SoftWhite,
+                        unfocusedTextColor = SoftWhite,
+                        focusedBorderColor = BrandGreen,
+                        unfocusedBorderColor = SoftWhite.copy(alpha = 0.1f),
+                        cursorColor = BrandGreen
                     ),
                     isError = uiState.passwordError != null,
                     supportingText = { uiState.passwordError?.let { Text(it, color = Color.Red) } },
@@ -203,18 +210,15 @@ fun RegistrationScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { viewModel.registerUser(onRegistrationSuccess) }
                     ),
-                    leadingIcon = { Text("🔒", modifier = Modifier.padding(start = 12.dp)) },
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
-
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, contentDescription = description, tint = Color.White.copy(alpha = 0.4f))
+                            Icon(imageVector = image, contentDescription = null, tint = SoftWhite.copy(alpha = 0.4f))
                         }
                     }
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
                     onClick = { viewModel.registerUser(onRegistrationSuccess) },
@@ -223,8 +227,8 @@ fun RegistrationScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = EnergyLime,
-                        contentColor = Color.Black
+                        containerColor = BrandGreen,
+                        contentColor = BrandDark
                     )
                 ) {
                     Text(
@@ -234,12 +238,12 @@ fun RegistrationScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(onClick = onBackToLogin) {
                     Text(
                         text = "¿YA TIENES CUENTA? INICIA SESIÓN",
-                        color = EnergyLime.copy(alpha = 0.7f),
+                        color = BrandCyan,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
