@@ -1,24 +1,23 @@
-# Mejoras en el Seguimiento de Hábitos Completadas
+# Actualización: Edición de Perfil y Corrección del Reloj
 
-He implementado todas las mejoras solicitadas para optimizar el seguimiento de tus hábitos y la experiencia de usuario en la creación de los mismos.
+He implementado la posibilidad de editar los datos de tu cuenta y he corregido el funcionamiento del reloj de recordatorios para que sea más sencillo de usar.
 
 ## Cambios Realizados
 
-### 1. Visualización por Día de la Semana
-- **Actividad Semanal Clicable**: Ahora puedes hacer clic en cualquier día de la sección "ACTIVIDAD SEMANAL" para ver los hábitos correspondientes a esa fecha.
-- **Registro Histórico**: Al seleccionar un día pasado, puedes marcar o desmarcar hábitos. El progreso diario se recalculará automáticamente para ese día específico.
-- **Filtrado por Frecuencia**: La lista de hábitos ahora solo muestra los hábitos que están activos en el día seleccionado (según su frecuencia "Diaria" o "Días específicos") o aquellos que ya fueron completados en esa fecha.
+### 1. Edición de Perfil (Nueva Funcionalidad)
+- **Modo Edición**: Ahora en la pestaña de Perfil encontrarás un botón de **EDITAR PERFIL**.
+- **Campos Editables**: Puedes modificar tu nombre, correo electrónico y contraseña directamente desde la app.
+- **Persistencia**: Los cambios se guardan instantáneamente en tu sesión y en la base de datos de usuarios, por lo que se mantienen al navegar por la app o reiniciar sesión.
+- **Diseño Mejorado**: La pantalla de perfil ahora permite scroll si el contenido es muy largo y mantiene el estilo deportivo con colores verde lima y negro.
 
-### 2. Mejoras en la Creación de Hábitos
-- **Categorías con Menú Desplegable**: El campo de categoría ahora es un menú de selección con categorías predefinidas (Poder, Cardio, Nutrición, etc.).
-- **Categorías Personalizadas**: He añadido la opción "Otro..." que permite escribir el nombre de una categoría completamente nueva.
-- **Reloj Optimizado**:
-    - El selector de hora ahora utiliza un formato de **24 horas** para una configuración más precisa.
-    - La aplicación traduce automáticamente la hora seleccionada al formato de **12 horas (AM/PM)** para mostrarla en la lista de hábitos y en el diálogo.
+### 2. Corrección del Reloj de Recordatorios
+- **Formato 12h Nativo**: He cambiado el selector de hora al formato de 12 horas.
+- **Selectores AM/PM**: Ahora aparecen botones claros para elegir **AM** o **PM**, eliminando la confusión de tener múltiples círculos de números (formato 24h).
+- **Interfaz Simplificada**: El reloj ahora solo muestra los números del 1 al 12, tal como pediste, para una experiencia más natural.
 
 ## Verificación Realizada
-- **Compilación Exitosa**: Se verificó que el proyecto compila sin errores tras los cambios en el modelo de datos y la UI.
-- **Lógica de Frecuencia**: Se implementó una lógica robusta en `Habit.isActiveOn(date)` para manejar los días específicos de la semana.
-- **Estado de la UI**: Se ajustó `DashboardViewModel` para mantener un `selectedDate` y exponer un flujo de hábitos filtrados reactivo.
+- **Compilación Exitosa**: El proyecto compila correctamente con todas las nuevas dependencias y lógica.
+- **Lógica de Base de Datos**: Se añadió la función `updateUser` en `UserDatabase` para asegurar que los datos modificados se guarden correctamente.
+- **Reactividad**: Al cambiar tu nombre en el perfil, verás que el saludo en la pantalla principal ("Buenos días, [Nombre]") se actualiza automáticamente.
 
-Puedes probar estos cambios directamente en la aplicación. ¡Espero que estas mejoras te ayuden a mantener tu racha!
+¡Ya puedes entrar a tu perfil y personalizar tus datos!

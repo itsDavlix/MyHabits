@@ -2,7 +2,9 @@ package com.example.myhabits.ui.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,46 +66,132 @@ fun MainHubScreen() {
 
 @Composable
 fun ProfileScreen() {
-    val user by com.example.myhabits.data.SessionManager.currentUser.collectAsState()
+    val currentUser by com.example.myhabits.data.SessionManager.currentUser.collectAsState()
+    var isEditing by remember { mutableStateOf(false) }
     
+    var name by remember(currentUser) { mutableStateOf(currentUser?.name ?: "") }
+    var email by remember(currentUser) { mutableStateOf(currentUser?.email ?: "") }
+    var password by remember(currentUser) { mutableStateOf(currentUser?.password ?: "") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0A0A0A))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(40.dp))
+        
         Text(
             text = "👤",
             fontSize = 80.sp,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = user?.name?.uppercase() ?: "ATLETA",
-            color = Color.White,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Black
-        )
-        Text(
-            text = user?.email ?: "",
-            color = Color.White.copy(alpha = 0.5f),
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 48.dp)
-        )
-        
-        Button(
-            onClick = { 
-                com.example.myhabits.data.SessionManager.setCurrentUser(null)
-                // Navigation to login will be handled by the main NavHost 
-                // but we need to trigger it. Actually we don't have direct access here.
-                // In a real app we'd use a shared ViewModel or callback.
-            },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.7f)),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
+
+        if (!isEditing) {
+            Text(
+                text = currentUser?.name?.uppercase() ?: "ATLETA",
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = currentUser?.email ?: "",
+                color = Color.White.copy(alpha = 0.5f),
+                fontSize = 16.sp,
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
+
+            Button(
+                onClick = { isEditing = true },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4FF00), contentColor = Color.Black),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("EDITAR PERFIL", fontWeight = FontWeight.Bold)
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = { 
+                    com.example.myhabits.data.SessionManager.setCurrentUser(null)
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.7f)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
+            }
+        } else {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD4FF00),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    focusedLabelColor = Color(0xFFD4FF00),
+                    unfocusedTextColor = Color.White,
+                    focusedTextColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo Electrónico") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD4FF00),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    focusedLabelColor = Color(0xFFD4FF00),
+                    unfocusedTextColor = Color.White,
+                    focusedTextColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Nueva Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD4FF00),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                    focusedLabelColor = Color(0xFFD4FF00),
+                    unfocusedTextColor = Color.White,
+                    focusedTextColor = Color.White
+                )
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { 
+                    val oldEmail = currentUser?.email ?: ""
+                    val updatedUser = com.example.myhabits.data.User(name, email, password)
+                    com.example.myhabits.data.UserDatabase.updateUser(oldEmail, updatedUser)
+                    com.example.myhabits.data.SessionManager.setCurrentUser(updatedUser)
+                    isEditing = false 
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4FF00), contentColor = Color.Black),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold)
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            TextButton(
+                onClick = { isEditing = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("CANCELAR", color = Color.White.copy(alpha = 0.5f))
+            }
         }
     }
 }

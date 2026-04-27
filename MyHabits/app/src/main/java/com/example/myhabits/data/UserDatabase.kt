@@ -23,4 +23,12 @@ object UserDatabase {
     fun exists(email: String): Boolean {
         return _users.value.any { it.email == email }
     }
+
+    fun updateUser(oldEmail: String, updatedUser: User) {
+        _users.update { currentUsers ->
+            currentUsers.map { user ->
+                if (user.email == oldEmail) updatedUser else user
+            }
+        }
+    }
 }

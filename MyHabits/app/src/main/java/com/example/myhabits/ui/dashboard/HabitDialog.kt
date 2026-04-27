@@ -55,10 +55,15 @@ fun HabitDialog(
     var categoryExpanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(
-        initialHour = reminderTime?.hour ?: 10,
+        initialHour = if (reminderTime != null) {
+            if (reminderTime!!.hour == 0) 12 
+            else if (reminderTime!!.hour > 12) reminderTime!!.hour - 12 
+            else reminderTime!!.hour
+        } else 10,
         initialMinute = reminderTime?.minute ?: 0,
-        is24Hour = true
+        is24Hour = false
     )
+    var amPmSelection by remember { mutableStateOf(if ((reminderTime?.hour ?: 10) < 12) "AM" else "PM") }
     
     val daysOfWeek = listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
     var selectedDays by remember { 
@@ -189,7 +194,19 @@ fun HabitDialog(
                         onDismissRequest = { showTimePicker = false },
                         confirmButton = {
                             TextButton(onClick = {
-                                reminderTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                                var finalHour = timePickerState.hour
+                                // El TimePicker con is24Hour=false ya maneja AM/PM internamente, 
+                                // pero mantenemos los botones externos para cumplir con la petición de "tercer selector"
+                                // y asegurar que el usuario tenga el control visual que pidió.
+                                
+                                // Si el usuario usó los botones externos de AM/PM, forzamos ese periodo:
+                                if (amPmSelection == "AM") {
+                                    if (finalHour >= 12) finalHour -= 12
+                                } else { // PM
+                                    if (finalHour < 12) finalHour += 12
+                                }
+
+                                reminderTime = LocalTime.of(finalHour, timePickerState.minute)
                                 showTimePicker = false
                             }) { Text("OK", color = EnergyLime) }
                         },
@@ -197,8 +214,37 @@ fun HabitDialog(
                             TextButton(onClick = { showTimePicker = false }) { Text("CANCELAR", color = Color.White.copy(alpha = 0.6f)) }
                         }
                     ) {
-                        Box(modifier = Modifier.padding(24.dp), contentAlignment = Alignment.Center) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
                             TimePicker(state = timePickerState)
+                            
+                            // Nuevo selector manual de AM/PM
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                listOf("AM", "PM").forEach { period ->
+                                    val isSel = amPmSelection == period
+                                    Surface(
+                                        onClick = { amPmSelection = period },
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSel) EnergyLime else Color.White.copy(alpha = 0.1f),
+                                        modifier = Modifier.width(80.dp).padding(horizontal = 4.dp)
+                                    ) {
+                                        Box(modifier = Modifier.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                                            Text(
+                                                text = period,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isSel) Color.Black else Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
