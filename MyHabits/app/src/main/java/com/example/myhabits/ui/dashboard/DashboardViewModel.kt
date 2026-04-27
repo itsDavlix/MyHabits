@@ -8,6 +8,7 @@ import com.example.myhabits.data.Habit
 import com.example.myhabits.data.HabitRepository
 import com.example.myhabits.data.SessionManager
 import kotlinx.coroutines.flow.*
+import java.time.LocalDate
 import java.time.LocalTime
 
 class DashboardViewModel(
@@ -18,7 +19,14 @@ class DashboardViewModel(
     private val _userName = MutableStateFlow("USUARIO")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+
     val habits: StateFlow<List<Habit>> = repository.habits
+
+    val habitsForSelectedDate: StateFlow<List<Habit>> = combine(habits, _selectedDate) { habitsList, date ->
+        habitsList.filter { it.isActiveOn(date) || it.isCompletedOn(date) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         SessionManager.currentUser
@@ -29,7 +37,11 @@ class DashboardViewModel(
     }
 
     fun toggleHabit(habitId: Int) {
-        repository.toggleHabit(habitId)
+        repository.toggleHabit(habitId, _selectedDate.value)
+    }
+    
+    fun setSelectedDate(date: LocalDate) {
+        _selectedDate.value = date
     }
     
     fun toggleFavorite(habitId: Int) {

@@ -42,8 +42,8 @@ Este plan detalla las mejoras para permitir la visualización de hábitos comple
     - Incluir categorías predefinidas: "Poder", "Cardio", "Nutrición", "Flex", "Recuperación", "Descanso".
     - Añadir opción "Otro..." que habilita un campo de texto para escribir una categoría personalizada.
 - **Selector de Recordatorio**:
-    - Asegurar que el `TimePicker` y el texto de visualización manejen correctamente el formato AM/PM.
-    - El texto del botón de recordatorio mostrará explícitamente "AM" o "PM" (ej: "10:30 AM").
+    - Configurar el `TimePicker` para que use el formato de **24 horas** durante la selección.
+    - Traducir la hora seleccionada a formato de **12 horas (AM/PM)** para la visualización en el botón del diálogo y en la lista de hábitos.
 
 ---
 

@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,22 +29,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myhabits.data.Habit
 import com.example.myhabits.ui.theme.*
 import java.util.Calendar
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel(),
     statsViewModel: StatsViewModel? = null
 ) {
-    val habits by viewModel.habits.collectAsState()
+    val habits by viewModel.habitsForSelectedDate.collectAsState()
+    val allHabits by viewModel.habits.collectAsState()
     val userName by viewModel.userName.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
     val statsState = statsViewModel?.uiState?.collectAsState()?.value ?: StatsState()
     
     val sortedHabits = remember(habits) { habits.sortedByDescending { it.isFavorite } }
-    val activeHabits = habits.filter { !it.isPaused }
-    val progress = remember(activeHabits) {
-        if (activeHabits.isEmpty()) 0f else activeHabits.count { it.isCompletedToday }.toFloat() / activeHabits.size
+    val activeHabitsOnSelectedDate = allHabits.filter { it.isActiveOn(selectedDate) || it.isCompletedOn(selectedDate) }
+    val progress = remember(activeHabitsOnSelectedDate, selectedDate) {
+        if (activeHabitsOnSelectedDate.isEmpty()) 0f 
+        else activeHabitsOnSelectedDate.count { it.isCompletedOn(selectedDate) }.toFloat() / activeHabitsOnSelectedDate.size
     }
 
     var habitToEdit by remember { mutableStateOf<Habit?>(null) }
@@ -83,12 +90,21 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            WeeklyStatsSection(statsState.weeklyData)
+            WeeklyStatsSection(statsState.weeklyData, selectedDate, onDateSelected = { viewModel.setSelectedDate(it) })
             Spacer(modifier = Modifier.height(24.dp))
-            HealthProgressCard(progress, activeHabits.count { it.isCompletedToday }, activeHabits.size)
+            HealthProgressCard(progress, activeHabitsOnSelectedDate.count { it.isCompletedOn(selectedDate) }, activeHabitsOnSelectedDate.size, selectedDate)
             Spacer(modifier = Modifier.height(32.dp))
             
-            SectionTitle("HÁBITOS DEL DÍA")
+            val sectionTitle = when (selectedDate) {
+                LocalDate.now() -> "HÁBITOS DE HOY"
+                LocalDate.now().minusDays(1) -> "HÁBITOS DE AYER"
+                LocalDate.now().plusDays(1) -> "HÁBITOS DE MAÑANA"
+                else -> {
+                    val locale = Locale("es", "ES")
+                    "HÁBITOS DEL ${selectedDate.dayOfWeek.getDisplayName(TextStyle.FULL, locale).uppercase()}"
+                }
+            }
+            SectionTitle(sectionTitle)
             
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -98,6 +114,7 @@ fun DashboardScreen(
                 items(items = sortedHabits, key = { it.id }) { habit ->
                     HealthHabitItem(
                         habit = habit,
+                        selectedDate = selectedDate,
                         onToggle = { viewModel.toggleHabit(habit.id) },
                         onEdit = { habitToEdit = habit; showDialog = true },
                         onDelete = { viewModel.deleteHabit(habit.id) },
@@ -193,21 +210,45 @@ fun HeaderSection(userName: String) {
 }
 
 @Composable
-fun WeeklyStatsSection(weeklyData: List<Float>) {
+fun WeeklyStatsSection(weeklyData: List<Float>, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
     val days = listOf("LUN", "MAR", "MIE", "JUE", "VIE", "SAB", "DOM")
+    val today = LocalDate.now()
+    val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
 
     Column {
         Text(text = "ACTIVIDAD SEMANAL", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.4f))
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             days.forEachIndexed { index, day ->
+                val date = startOfWeek.plusDays(index.toLong())
+                val isSelected = date == selectedDate
                 val progressValue = weeklyData.getOrElse(index) { 0f }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(modifier = Modifier.width(32.dp).height(70.dp).clip(RoundedCornerShape(4.dp)).background(DarkSurface)) {
+                
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { onDateSelected(date) }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(32.dp)
+                            .height(70.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (isSelected) EnergyLime.copy(alpha = 0.2f) else DarkSurface)
+                            .border(
+                                if (isSelected) 1.dp else 0.dp, 
+                                if (isSelected) EnergyLime else Color.Transparent, 
+                                RoundedCornerShape(4.dp)
+                            )
+                    ) {
                         Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(progressValue.coerceIn(0f, 1f)).align(Alignment.BottomCenter).background(if (progressValue >= 0.8f) EnergyLime else HealthBlue))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = day, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.6f))
+                    Text(
+                        text = day, 
+                        style = MaterialTheme.typography.labelSmall, 
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                        color = if (isSelected) EnergyLime else Color.White.copy(alpha = 0.6f)
+                    )
                 }
             }
         }
@@ -215,12 +256,16 @@ fun WeeklyStatsSection(weeklyData: List<Float>) {
 }
 
 @Composable
-fun HealthProgressCard(progress: Float, completed: Int, total: Int) {
+fun HealthProgressCard(progress: Float, completed: Int, total: Int, selectedDate: LocalDate) {
+    val dateText = when (selectedDate) {
+        LocalDate.now() -> "HOY"
+        else -> selectedDate.format(DateTimeFormatter.ofPattern("dd MMM"))
+    }
     Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), color = DarkSurface, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text(text = "ESTADO DIARIO", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EnergyLime)
+                    Text(text = "ESTADO ($dateText)", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EnergyLime)
                     Text(text = "$completed de $total completados", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
                 }
                 Text(text = "${(progress * 100).toInt()}%", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Black, color = Color.White)
@@ -233,17 +278,19 @@ fun HealthProgressCard(progress: Float, completed: Int, total: Int) {
                 trackColor = Color.Black,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = if (progress < 1f) "Cerca de tu meta de hoy" else "¡Objetivos completados!", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = if (progress >= 1f) EnergyLime else Color.White)
+            Text(text = if (progress < 1f) "Cerca de tu meta" else "¡Objetivos completados!", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = if (progress >= 1f) EnergyLime else Color.White)
         }
     }
 }
 
 @Composable
-fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, onFavorite: () -> Unit, onPause: () -> Unit) {
+fun HealthHabitItem(habit: Habit, selectedDate: LocalDate, onToggle: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, onFavorite: () -> Unit, onPause: () -> Unit) {
     var showMenu by remember { mutableStateOf(false) }
+    val isCompletedOnDate = habit.isCompletedOn(selectedDate)
+    
     val bgByState by animateColorAsState(targetValue = when {
         habit.isPaused -> DarkSurface.copy(alpha = 0.5f)
-        habit.isCompletedToday -> EnergyLime.copy(alpha = 0.12f)
+        isCompletedOnDate -> EnergyLime.copy(alpha = 0.12f)
         else -> DarkSurface
     }, label = "bg")
 
@@ -254,26 +301,26 @@ fun HealthHabitItem(habit: Habit, onToggle: () -> Unit, onEdit: () -> Unit, onDe
         color = bgByState,
         border = BorderStroke(1.dp, when {
             habit.isPaused -> Color.White.copy(alpha = 0.05f)
-            habit.isCompletedToday -> EnergyLime.copy(alpha = 0.6f)
+            isCompletedOnDate -> EnergyLime.copy(alpha = 0.6f)
             else -> Color.White.copy(alpha = 0.08f)
         })
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            HabitIcon(habit)
+            HabitIcon(habit, isCompletedOnDate)
             Spacer(modifier = Modifier.width(16.dp))
-            HabitInfo(habit, Modifier.weight(1f))
+            HabitInfo(habit, isCompletedOnDate, Modifier.weight(1f))
             HabitActions(habit, showMenu, { showMenu = it }, onEdit, onFavorite, onPause, onDelete)
             Spacer(modifier = Modifier.width(8.dp))
-            HabitCheckbox(habit.isCompletedToday)
+            HabitCheckbox(isCompletedOnDate)
         }
     }
 }
 
 @Composable
-private fun HabitIcon(habit: Habit) {
+private fun HabitIcon(habit: Habit, isCompletedOnDate: Boolean) {
     Box(
         modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp))
-            .background(if (habit.isCompletedToday) EnergyLime.copy(alpha = 0.2f) else habit.categoryColor.copy(alpha = 0.1f)),
+            .background(if (isCompletedOnDate) EnergyLime.copy(alpha = 0.2f) else habit.categoryColor.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
         Text(text = habit.icon, fontSize = 22.sp)
@@ -281,7 +328,7 @@ private fun HabitIcon(habit: Habit) {
 }
 
 @Composable
-private fun HabitInfo(habit: Habit, modifier: Modifier) {
+private fun HabitInfo(habit: Habit, isCompletedOnDate: Boolean, modifier: Modifier) {
     val reminderFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -289,8 +336,8 @@ private fun HabitInfo(habit: Habit, modifier: Modifier) {
                 text = habit.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.ExtraBold,
-                color = if (habit.isCompletedToday) EnergyLime else Color.White,
-                textDecoration = if (habit.isCompletedToday) TextDecoration.LineThrough else null
+                color = if (isCompletedOnDate) EnergyLime else Color.White,
+                textDecoration = if (isCompletedOnDate) TextDecoration.LineThrough else null
             )
             if (habit.isFavorite) {
                 Icon(Icons.Default.Favorite, null, tint = EnergyLime, modifier = Modifier.padding(start = 8.dp).size(16.dp))

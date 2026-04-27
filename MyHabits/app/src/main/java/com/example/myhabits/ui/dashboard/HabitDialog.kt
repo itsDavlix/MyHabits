@@ -38,18 +38,26 @@ fun HabitDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, Color, String, String, LocalTime?) -> Unit
 ) {
+    val categories = listOf("Poder", "Cardio", "Nutrición", "Flex", "Recuperación", "Descanso", "Otro...")
+    
     var name by remember { mutableStateOf(habit?.name ?: "") }
-    var category by remember { mutableStateOf(habit?.category ?: "") }
+    var customCategory by remember { mutableStateOf("") }
+    var selectedCategory by remember { 
+        mutableStateOf(if (habit != null && habit.category !in categories.dropLast(1)) "Otro..." else habit?.category ?: "") 
+    }
+    
     var goal by remember { mutableStateOf(habit?.goal ?: "") }
     var selectedColor by remember { mutableStateOf(habit?.categoryColor ?: EnergyLime) }
     var selectedIcon by remember { mutableStateOf(habit?.icon ?: "✨") }
     var frequency by remember { mutableStateOf(habit?.frequency ?: "Diaria") }
     var reminderTime by remember { mutableStateOf(habit?.reminderTime) }
     
+    var categoryExpanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(
         initialHour = reminderTime?.hour ?: 10,
-        initialMinute = reminderTime?.minute ?: 0
+        initialMinute = reminderTime?.minute ?: 0,
+        is24Hour = true
     )
     
     val daysOfWeek = listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
@@ -60,9 +68,10 @@ fun HabitDialog(
     val focusManager = LocalFocusManager.current
     
     val onHabitConfirm = {
-        if (name.isNotBlank() && goal.isNotBlank() && category.isNotBlank()) {
+        val finalCategory = if (selectedCategory == "Otro...") customCategory else selectedCategory
+        if (name.isNotBlank() && goal.isNotBlank() && finalCategory.isNotBlank()) {
             val finalFreq = if (frequency == "Días específicos") selectedDays.joinToString(", ") else frequency
-            onConfirm(name, goal, category, selectedColor, selectedIcon, finalFreq, reminderTime)
+            onConfirm(name, goal, finalCategory, selectedColor, selectedIcon, finalFreq, reminderTime)
         }
     }
 
@@ -91,19 +100,57 @@ fun HabitDialog(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
-                HabitTextField(
-                    label = "Categoría",
-                    value = category,
-                    onValueChange = { category = it },
-                    modifier = Modifier.onPreviewKeyEvent {
-                        if ((it.key == Key.Tab || it.key == Key.Enter) && it.type == KeyEventType.KeyDown) {
-                            focusManager.moveFocus(FocusDirection.Down)
-                            true
-                        } else false
-                    },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                )
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    ExposedDropdownMenuBox(
+                        expanded = categoryExpanded,
+                        onExpandedChange = { categoryExpanded = !categoryExpanded }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedCategory,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Categoría") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = EnergyLime,
+                                unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                                focusedLabelColor = EnergyLime,
+                                unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                        ExposedDropdownMenu(
+                            expanded = categoryExpanded,
+                            onDismissRequest = { categoryExpanded = false },
+                            modifier = Modifier.background(DarkSurface)
+                        ) {
+                            categories.forEach { cat ->
+                                DropdownMenuItem(
+                                    text = { Text(cat, color = Color.White) },
+                                    onClick = {
+                                        selectedCategory = cat
+                                        categoryExpanded = false
+                                        if (cat != "Otro...") customCategory = ""
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (selectedCategory == "Otro...") {
+                    HabitTextField(
+                        label = "Nombre de la categoría personalizada",
+                        value = if (customCategory.isEmpty() && habit != null && habit.category !in categories) habit.category.also { customCategory = it } else customCategory,
+                        onValueChange = { customCategory = it },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    )
+                }
+
                 HabitTextField(
                     label = "Meta (ej: 2L, 30 min)",
                     value = goal,
