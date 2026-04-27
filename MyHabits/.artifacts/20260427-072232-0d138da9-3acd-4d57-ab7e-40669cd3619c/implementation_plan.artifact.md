@@ -1,38 +1,28 @@
-# Plan de Mejora: Perfil de Usuario y Modificación de Datos
+# Plan de Mejora: Mensajes Motivacionales Post-Hábito
 
-Este plan detalla los cambios para permitir que los usuarios modifiquen su nombre, correo electrónico y contraseña desde la pantalla de perfil.
+Este plan detalla la implementación de una superposición estética y animada que muestra una frase motivacional cada vez que el usuario completa un hábito.
 
-## Corrección del Reloj de Recordatorio
-
-- **Cambio de Formato**: Cambiar el `TimePicker` de formato 24h a formato **12h** (`is24Hour = false`).
-- **Selector AM/PM**: Al usar `is24Hour = false`, Material 3 añade automáticamente los botones de selección AM/PM al reloj, eliminando la confusión de los "otros números" (que eran las horas de la tarde en formato 24h).
-- **Consistencia**: Mantener la visualización de la hora seleccionada en formato 12h con AM/PM.
-
-## Perfil de Usuario y Modificación de Datos
-
-#### [UserDatabase.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/data/UserDatabase.kt)
-- Añadir función `updateUser(updatedUser: User)` para actualizar los datos del usuario en la base de datos simulada.
-
----
+## Cambios Propuestos
 
 ### Interfaz de Usuario (Compose)
 
-#### [MainHubScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/MainHubScreen.kt)
-- Refactorizar `ProfileScreen` para incluir:
-    - Un modo de visualización y un modo de edición.
-    - Campos de texto (`OutlinedTextField`) para editar el nombre, email y contraseña.
-    - Botones de "EDITAR PERFIL", "GUARDAR CAMBIOS" y "CANCELAR".
-    - Lógica para actualizar tanto el `SessionManager` como el `UserDatabase` al guardar.
-    - Estilos coherentes con el resto de la aplicación (uso de `EnergyLime`, `DarkSurface`, etc.).
+#### [DashboardScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/dashboard/DashboardScreen.kt)
+- **Estado de Motivación**: Añadir estados `showMotivationalOverlay` y `currentMotivationalMessage`.
+- **Nuevo Componente `MotivationalOverlay`**:
+    - Una superposición a pantalla completa con fondo semi-transparente difuminado (glassmorphism).
+    - Tipografía impactante en color `EnergyLime`.
+    - Animaciones de entrada (fade-in + scale) y salida automática después de 2 segundos.
+    - Frases aleatorias: "¡Buen trabajo!", "Otro paso más cerca de tu meta.", "Disciplina completada.", "Racha en progreso."
+- **Integración**: Activar el overlay dentro de la lógica de `onToggle` en `DashboardScreen` solo cuando el hábito pasa a estado completado.
 
 ---
 
 ## Plan de Verificación
 
 ### Verificación Manual
-1. Iniciar sesión y navegar a la pestaña de **Perfil**.
-2. Hacer clic en **EDITAR PERFIL** y verificar que los campos se vuelven editables.
-3. Cambiar el nombre y el correo electrónico, luego hacer clic en **GUARDAR CAMBIOS**.
-4. Verificar que el nombre se actualiza inmediatamente en el encabezado de la pantalla principal (Dashboard).
-5. Cerrar sesión e intentar iniciar sesión con el nuevo correo electrónico para confirmar que los cambios persistieron en `UserDatabase`.
-6. Verificar que el botón **CANCELAR** revierte los cambios pendientes y vuelve al modo de visualización.
+1. Abrir la aplicación en el Dashboard.
+2. Marcar un hábito como completado.
+3. Verificar que aparece un mensaje motivacional a pantalla completa con una animación suave.
+4. Confirmar que el mensaje desaparece solo después de un breve periodo (aprox. 2 segundos).
+5. Completar otro hábito y verificar que el mensaje puede ser diferente (aleatorio).
+6. Verificar que completar un hábito en un día pasado también active el mensaje.

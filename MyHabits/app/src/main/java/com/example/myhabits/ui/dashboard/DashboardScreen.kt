@@ -1,6 +1,8 @@
 package com.example.myhabits.ui.dashboard
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,10 +19,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myhabits.data.Habit
 import com.example.myhabits.ui.theme.*
+import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.time.LocalDate
 import java.time.LocalTime
@@ -55,6 +60,26 @@ fun DashboardScreen(
 
     var habitToEdit by remember { mutableStateOf<Habit?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    
+    // Estados para el overlay motivacional
+    var showMotivation by remember { mutableStateOf(false) }
+    var motivationalMessage by remember { mutableStateOf("") }
+    val motivationalPhrases = listOf(
+        "¡Buen trabajo!",
+        "Otro paso más cerca de tu meta.",
+        "Disciplina completada.",
+        "Racha en progreso.",
+        "¡Estás imparable!",
+        "Compromiso demostrado.",
+        "Cada pequeño paso cuenta."
+    )
+
+    LaunchedEffect(showMotivation) {
+        if (showMotivation) {
+            delay(2000)
+            showMotivation = false
+        }
+    }
 
     if (showDialog) {
         HabitDialog(
@@ -115,7 +140,14 @@ fun DashboardScreen(
                     HealthHabitItem(
                         habit = habit,
                         selectedDate = selectedDate,
-                        onToggle = { viewModel.toggleHabit(habit.id) },
+                        onToggle = { 
+                            val wasCompleted = habit.isCompletedOn(selectedDate)
+                            viewModel.toggleHabit(habit.id) 
+                            if (!wasCompleted) {
+                                motivationalMessage = motivationalPhrases.random()
+                                showMotivation = true
+                            }
+                        },
                         onEdit = { habitToEdit = habit; showDialog = true },
                         onDelete = { viewModel.deleteHabit(habit.id) },
                         onFavorite = { viewModel.toggleFavorite(habit.id) },
@@ -133,6 +165,65 @@ fun DashboardScreen(
             shape = RoundedCornerShape(16.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(32.dp))
+        }
+
+        // Overlay Motivacional
+        MotivationalOverlay(
+            isVisible = showMotivation,
+            message = motivationalMessage
+        )
+    }
+}
+
+@Composable
+fun MotivationalOverlay(isVisible: Boolean, message: String) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn() + scaleIn(initialScale = 0.8f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)),
+        exit = fadeOut() + scaleOut(targetScale = 1.1f)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.85f)) // Fondo oscuro sólido para máximo contraste
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .background(
+                        color = DarkSurface,
+                        shape = RoundedCornerShape(28.dp)
+                    )
+                    .border(2.dp, EnergyLime, RoundedCornerShape(28.dp))
+                    .padding(horizontal = 32.dp, vertical = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "✨",
+                    fontSize = 56.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = message.uppercase(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Black,
+                    color = EnergyLime,
+                    textAlign = TextAlign.Center,
+                    letterSpacing = 2.sp,
+                    lineHeight = 36.sp
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .height(4.dp)
+                        .width(80.dp)
+                        .clip(CircleShape)
+                        .background(EnergyLime)
+                )
+            }
         }
     }
 }
