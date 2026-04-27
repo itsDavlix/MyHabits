@@ -3,8 +3,10 @@ package com.example.myhabits.ui.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,13 +53,13 @@ fun MainHubScreen() {
                 startDestination = BottomBarScreen.Home.route
             ) {
                 composable(BottomBarScreen.Home.route) {
-                    DashboardScreen(dashboardViewModel)
+                    DashboardScreen(dashboardViewModel, statsViewModel)
                 }
                 composable(BottomBarScreen.Stats.route) {
                     StatsScreen(statsViewModel)
                 }
                 composable(BottomBarScreen.Profile.route) {
-                    ProfileScreen()
+                    ProfileScreen(dashboardViewModel, statsViewModel)
                 }
             }
         }
@@ -65,75 +67,170 @@ fun MainHubScreen() {
 }
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(dashboardViewModel: DashboardViewModel, statsViewModel: StatsViewModel) {
     val currentUser by com.example.myhabits.data.SessionManager.currentUser.collectAsState()
+    val habits by dashboardViewModel.habits.collectAsState()
+    val stats by statsViewModel.uiState.collectAsState()
+    
     var isEditing by remember { mutableStateOf(false) }
     
     var name by remember(currentUser) { mutableStateOf(currentUser?.name ?: "") }
     var email by remember(currentUser) { mutableStateOf(currentUser?.email ?: "") }
     var password by remember(currentUser) { mutableStateOf(currentUser?.password ?: "") }
 
+    val userLevel = when {
+        stats.totalCompletions > 100 -> "MAESTRO"
+        stats.totalCompletions > 50 -> "PRO"
+        stats.totalCompletions > 20 -> "GUERRERO"
+        stats.totalCompletions > 5 -> "CONSTANTE"
+        else -> "NOVATO"
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A))
+            .background(com.example.myhabits.ui.theme.DeepBlack)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        Text(
-            text = "👤",
-            fontSize = 80.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
         if (!isEditing) {
+            // Profile Header
+            Box(contentAlignment = Alignment.BottomEnd) {
+                Surface(
+                    modifier = Modifier.size(100.dp),
+                    shape = RoundedCornerShape(30.dp),
+                    color = com.example.myhabits.ui.theme.DarkSurface,
+                    border = androidx.compose.foundation.BorderStroke(2.dp, com.example.myhabits.ui.theme.EnergyLime)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(text = "👤", fontSize = 50.sp)
+                    }
+                }
+                Surface(
+                    color = com.example.myhabits.ui.theme.EnergyLime,
+                    shape = CircleShape,
+                    modifier = Modifier.size(28.dp).offset(x = 4.dp, y = 4.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("⚡", fontSize = 14.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
             Text(
                 text = currentUser?.name?.uppercase() ?: "ATLETA",
                 color = Color.White,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Black
             )
-            Text(
-                text = currentUser?.email ?: "",
-                color = Color.White.copy(alpha = 0.5f),
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 48.dp)
-            )
+            
+            Surface(
+                color = com.example.myhabits.ui.theme.EnergyLime.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(8.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, com.example.myhabits.ui.theme.EnergyLime.copy(alpha = 0.3f)),
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                Text(
+                    text = "NIVEL DISCIPLINA: $userLevel",
+                    color = com.example.myhabits.ui.theme.EnergyLime,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Stats Grid
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickStatCard(
+                    title = "Racha Actual",
+                    value = "${stats.currentStreak}",
+                    unit = "días",
+                    icon = "🔥",
+                    modifier = Modifier.weight(1f)
+                )
+                QuickStatCard(
+                    title = "Hábitos",
+                    value = "${habits.size}",
+                    unit = "totales",
+                    icon = "📝",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickStatCard(
+                    title = "Completados",
+                    value = "${stats.totalCompletions}",
+                    unit = "veces",
+                    icon = "✅",
+                    modifier = Modifier.weight(1f)
+                )
+                QuickStatCard(
+                    title = "Favoritos",
+                    value = "${habits.count { it.isFavorite }}",
+                    unit = "habits",
+                    icon = "⭐",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = { isEditing = true },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4FF00), contentColor = Color.Black),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = com.example.myhabits.ui.theme.DarkSurface, contentColor = Color.White),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
             ) {
+                Icon(androidx.compose.material.icons.Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("EDITAR PERFIL", fontWeight = FontWeight.Bold)
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Button(
                 onClick = { 
                     com.example.myhabits.data.SessionManager.setCurrentUser(null)
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.7f)),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.1f), contentColor = Color.Red),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f))
             ) {
                 Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
             }
         } else {
+            // Edit Mode (kept mostly as is but styled better)
+            Text(
+                text = "EDITAR PERFIL",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Black,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Nombre") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFD4FF00),
+                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = Color(0xFFD4FF00),
+                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -145,9 +242,9 @@ fun ProfileScreen() {
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFD4FF00),
+                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = Color(0xFFD4FF00),
+                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -159,9 +256,9 @@ fun ProfileScreen() {
                 label = { Text("Nueva Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFD4FF00),
+                    focusedBorderColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                    focusedLabelColor = Color(0xFFD4FF00),
+                    focusedLabelColor = com.example.myhabits.ui.theme.EnergyLime,
                     unfocusedTextColor = Color.White,
                     focusedTextColor = Color.White
                 )
@@ -178,8 +275,8 @@ fun ProfileScreen() {
                     isEditing = false 
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4FF00), contentColor = Color.Black),
-                shape = RoundedCornerShape(12.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = com.example.myhabits.ui.theme.EnergyLime, contentColor = Color.Black),
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Text("GUARDAR CAMBIOS", fontWeight = FontWeight.Bold)
             }
@@ -191,6 +288,46 @@ fun ProfileScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("CANCELAR", color = Color.White.copy(alpha = 0.5f))
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickStatCard(title: String, value: String, unit: String, icon: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = com.example.myhabits.ui.theme.DarkSurface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = icon, fontSize = 16.sp)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = value,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = unit,
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
             }
         }
     }
