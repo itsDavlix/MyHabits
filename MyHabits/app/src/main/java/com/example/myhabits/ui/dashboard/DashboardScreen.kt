@@ -1,8 +1,7 @@
 package com.example.myhabits.ui.dashboard
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +63,7 @@ fun DashboardScreen(
     
     // Estados para el overlay motivacional
     var showMotivation by remember { mutableStateOf(false) }
+    var showDayComplete by remember { mutableStateOf(false) }
     var motivationalMessage by remember { mutableStateOf("") }
     val motivationalPhrases = listOf(
         "¡Buen trabajo!",
@@ -78,6 +79,13 @@ fun DashboardScreen(
         if (showMotivation) {
             delay(2000)
             showMotivation = false
+        }
+    }
+
+    LaunchedEffect(showDayComplete) {
+        if (showDayComplete) {
+            delay(3500) // Un poco más largo para que se vea el confeti
+            showDayComplete = false
         }
     }
 
@@ -143,9 +151,19 @@ fun DashboardScreen(
                         onToggle = { 
                             val wasCompleted = habit.isCompletedOn(selectedDate)
                             viewModel.toggleHabit(habit.id) 
+                            
                             if (!wasCompleted) {
-                                motivationalMessage = motivationalPhrases.random()
-                                showMotivation = true
+                                // Verificar si después de este toggle todo el día está completo
+                                val willBeAllCompleted = activeHabitsOnSelectedDate.all { 
+                                    if (it.id == habit.id) true else it.isCompletedOn(selectedDate) 
+                                }
+                                
+                                if (willBeAllCompleted && activeHabitsOnSelectedDate.isNotEmpty()) {
+                                    showDayComplete = true
+                                } else {
+                                    motivationalMessage = motivationalPhrases.random()
+                                    showMotivation = true
+                                }
                             }
                         },
                         onEdit = { habitToEdit = habit; showDialog = true },
@@ -172,6 +190,118 @@ fun DashboardScreen(
             isVisible = showMotivation,
             message = motivationalMessage
         )
+
+        // Overlay de Día Completado
+        DayCompleteOverlay(
+            isVisible = showDayComplete
+        )
+    }
+}
+
+@Composable
+fun DayCompleteOverlay(isVisible: Boolean) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(500)) + scaleIn(
+            initialScale = 0.8f,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+        ),
+        exit = fadeOut(animationSpec = tween(500)) + scaleOut(targetScale = 1.1f)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.85f))
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            EmojiConfeti()
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(EnergyLime, EnergyLime.copy(alpha = 0.8f))
+                        ),
+                        shape = RoundedCornerShape(32.dp)
+                    )
+                    .padding(horizontal = 48.dp, vertical = 40.dp)
+            ) {
+                Text(
+                    text = "🌟",
+                    fontSize = 48.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "DÍA COMPLETADO",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "¡ERES IMPARABLE!",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EmojiConfeti() {
+    val emojis = listOf("🎉", "🔥", "💪", "🏆", "⚡", "✨")
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        repeat(25) { index ->
+            val startX = remember { (0..100).random().toFloat() / 100f }
+            val startY = remember { (0..100).random().toFloat() / 100f }
+            val emoji = remember { emojis.random() }
+            
+            val infiniteTransition = rememberInfiniteTransition(label = "emoji_anim_$index")
+            
+            val yOffset by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 40f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "y_offset"
+            )
+            
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 0.8f,
+                targetValue = 1.2f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1500, easing = LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "scale"
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = yOffset.dp),
+                contentAlignment = androidx.compose.ui.BiasAlignment(startX * 2 - 1, startY * 2 - 1)
+            ) {
+                Text(
+                    text = emoji,
+                    fontSize = 28.sp,
+                    modifier = Modifier
+                        .scale(scale)
+                        .alpha(0.7f)
+                )
+            }
+        }
     }
 }
 
