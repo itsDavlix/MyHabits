@@ -45,6 +45,14 @@ Se ha rediseñado la pantalla de inicio de sesión para que sea más impactante 
 - **Campos de Texto**: Se suavizaron los bordes de los inputs para mayor coherencia visual.
 - **Ubicación**: [LoginScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/login/LoginScreen.kt)
 
+## 5. Unificación Estética en toda la App
+Se ha extendido el lenguaje visual "Pro/Neon" a todas las pantallas clave para una experiencia cohesiva.
+
+- **Pantalla de Registro**: Ahora utiliza el mismo diseño de tarjeta central con sombra neón y bordes redondeados que el Login, manteniendo la coherencia en el flujo de entrada.
+- **Consistencia de Color**: Se estandarizó el uso de `EnergyLime` para acentos, bordes de enfoque y botones de acción principal en toda la aplicación.
+- **Elementos UI**: Todos los campos de texto, botones y tarjetas ahora comparten un radio de curvatura de `16.dp` a `28.dp`, creando una interfaz suave pero moderna.
+- **Ubicación**: [RegistrationScreen.kt](file:///C:/Users/itsDavlix/Documents/MyHabits/MyHabits/app/src/main/java/com/example/myhabits/ui/login/RegistrationScreen.kt)
+
 ## Verificación
 - Se verificó que el diálogo de confirmación aparece correctamente al seleccionar "Eliminar" desde el menú.
 - Se comprobó mediante análisis de código que los hábitos pausados ahora pasan el filtro de visualización en `DashboardViewModel`.
